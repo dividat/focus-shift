@@ -38,10 +38,7 @@ function handleGroupNavigation(direction, group) {
       focusActiveElement(direction, group);
       break;
     case "linear":
-      // TODO Proper implementation for all directions
-      direction === "ArrowUp"
-        ? focusLastElement(direction, group)
-        : focusFirstElement(direction, group);
+      focusLinear(direction, group);
       break;
   }
 }
@@ -64,8 +61,7 @@ function handleMove(direction, focusedElement) {
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement#value
     if (focusedElement == null || focusedElement === document.body) {
-      // TODO Direction -- treat `body` as linear group?
-      if (focusableElements[0]) applyMove(direction, focusableElements[0]);
+      focusLinear(direction, document.body);
       return;
     }
 
@@ -262,5 +258,16 @@ function focusActiveElement(direction, group) {
   }
 }
 
-// Initialize the spatial navigation.
+/**
+ * Moves focus linearly in the direction of "travel".
+ * @param {string} direction - The name of the movement direction.
+ * @param {HTMLElement} group - The navigation group element.
+ */
+function focusLinear(direction, group) {
+  direction === "ArrowUp"
+    ? focusLastElement(direction, group)
+    : focusFirstElement(direction, group);
+}
+
+// Initialize at load
 initSpatialNavigation();
