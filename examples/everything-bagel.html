@@ -1,78 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Spatial Navigation Library Demo</title>
     <style>
-        .nav-group {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        button {
-            margin: 5px;
-        }
-	:focus {
-            outline: 3px yellow solid;
-	}
+      .nav-group {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      button {
+        margin: 5px;
+      }
+      :focus {
+        outline: 3px yellow solid;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <button>Orphan Button</button>
     <div class="nav-group" data-focus-group data-focus-group-strategy="first">
-    <em><kbd>first</kbd> group</em>
-        <button>First Button</button>
-        <button>Second Button</button>
-        <button>Third Button</button>
+      <em><kbd>first</kbd> group</em>
+      <button>First Button</button>
+      <button>Second Button</button>
+      <button>Third Button</button>
     </div>
 
     <div class="nav-group" data-focus-group data-focus-group-strategy="last">
-    <em><kbd>last</kbd> group</em>
-        <button>Button 1</button>
-        <button>Button 2</button>
-        <div class="nav-group" data-focus-group data-focus-group-strategy="active">
-            <em><kbd>active</kbd> group</em>
-            <div><button>Sub-button 1</button></div>
-            <div class="nav-group" data-focus-active data-focus-group data-focus-group-strategy="last">
-                <em><kbd>last</kbd> group (itself <kbd>active</kbd>)</em>
-                <button data-focus-active>Sub-sub-button 1</button>
-                <button data-focus-active>Sub-sub-button 2</button>
-	    </div>
-            <button>Sub-button 3</button>
-	</div>
+      <em><kbd>last</kbd> group</em>
+      <button>Button 1</button>
+      <button>Button 2</button>
+      <div
+        class="nav-group"
+        data-focus-group
+        data-focus-group-strategy="active"
+      >
+        <em><kbd>active</kbd> group</em>
+        <div><button>Sub-button 1</button></div>
+        <div
+          class="nav-group"
+          data-focus-active
+          data-focus-group
+          data-focus-group-strategy="last"
+        >
+          <em><kbd>last</kbd> group (itself <kbd>active</kbd>)</em>
+          <button data-focus-active>Sub-sub-button 1</button>
+          <button data-focus-active>Sub-sub-button 2</button>
+        </div>
+        <button>Sub-button 3</button>
+      </div>
     </div>
 
     <div class="nav-group" data-focus-group data-focus-group-strategy="linear">
-    <em><kbd>linear</kbd> group</em>
-	<div><button>Button 1</button></div>
-	<div><button>Button 2</button></div>
-	<div><button>Button 3</button></div>
+      <em><kbd>linear</kbd> group</em>
+      <div><button>Button 1</button></div>
+      <div><button>Button 2</button></div>
+      <div><button>Button 3</button></div>
     </div>
 
     <div class="nav-group" data-focus-group data-focus-group-strategy="active">
-	<em><kbd>active</kbd> group</em>
-        <button>Alpha</button>
-        <button data-focus-active>Beta (Active)</button>
-        <button>Gamma</button>
+      <em><kbd>active</kbd> group</em>
+      <button>Alpha</button>
+      <button data-focus-active>Beta (Active)</button>
+      <button>Gamma</button>
     </div>
 
     <div class="nav-group" data-focus-group data-focus-group-strategy="first">
-	    <em><kbd>first</kbd> group with muted</em>
-        <button data-focus-mute>Muted Button</button>
-        <button>Normal Button 1</button>
-        <button>Normal Button 2</button>
-        <button>Normal Button 3</button>
+      <em><kbd>first</kbd> group with muted</em>
+      <button data-focus-mute>Muted Button</button>
+      <button>Normal Button 1</button>
+      <button>Normal Button 2</button>
+      <button>Normal Button 3</button>
     </div>
 
     <div class="nav-group" data-focus-group>
-	<em>Default group</em>
-	<div><button>Button 1</button></div>
-	<div><button>Button 2</button></div>
-	<div><button>Button 3</button></div>
+      <em>Default group</em>
+      <div><button>Button 1</button></div>
+      <div><button>Button 2</button></div>
+      <div><button>Button 3</button></div>
     </div>
     <button>Orphan Button</button>
     <script src="../index.js"></script>
     <script src="keyevent-viewer.js"></script>
-</body>
+  </body>
 </html>
-
