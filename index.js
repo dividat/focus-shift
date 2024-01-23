@@ -21,8 +21,8 @@ function handleKeyDown(event) {
 
 /**
  * Handles navigation within a group.
- * @param {string} string - The direction of movement.
- * @param {HTMLElement} group - The navigation group element.
+ * @param {string} direction - The direction of movement.
+ * @param {Element} group - The navigation group element.
  */
 function handleGroupNavigation(direction, group) {
   const strategy = group.getAttribute("data-focus-group-strategy") || "linear";
@@ -46,7 +46,7 @@ function handleGroupNavigation(direction, group) {
 /**
  * Handles navigation for individual focusable elements.
  * @param {string} direction - The direction to move in.
- * @param {HTMLElement} focusedElement - The currently focused element.
+ * @param {Element} focusedElement - The currently focused element.
  */
 function handleMove(direction, focusedElement) {
   let nextParent = focusedElement || document.body;
@@ -57,7 +57,7 @@ function handleMove(direction, focusedElement) {
   do {
     nextParent =
       nextParent.parentElement.closest("[data-focus-group]") || document.body;
-    focusableElements = getFocusableElements(nextParent);
+    const focusableElements = getFocusableElements(nextParent);
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement#value
     if (focusedElement == null || focusedElement === document.body) {
@@ -73,6 +73,7 @@ function handleMove(direction, focusedElement) {
       };
     });
 
+    // DEBUG
     annotatedElements.forEach((elem) => (elem.element.style.background = null));
 
     // Filter elements based on direction
@@ -93,18 +94,18 @@ function handleMove(direction, focusedElement) {
   } while (candidateElements.length === 0 && nextParent !== document.body);
 
   const sortedElements = candidateElements.sort((a, b) => {
-    const distanceA = calculateTargetedDistance(focusedRect, a.rect);
-    const distanceB = calculateTargetedDistance(focusedRect, b.rect);
+    const distanceA = calculateTargetedDistance(direction, focusedRect, a.rect);
+    const distanceB = calculateTargetedDistance(direction, focusedRect, b.rect);
     return distanceA - distanceB;
   });
 
+  // DEBUG
   sortedElements.forEach(
     (elem, index) =>
       (elem.element.style.background = `rgba(255, 0, 0, ${1 / (index + 1)})`)
   );
 
-  function calculateTargetedDistance(originElem, targetElem) {
-    // TODO Rounding errors for really close neighboring elements
+  function calculateTargetedDistance(direction, originElem, targetElem) {
     switch (direction) {
       case "ArrowLeft":
         return euclidean(
@@ -168,9 +169,10 @@ function handleMove(direction, focusedElement) {
 /**
  * Find the value closest to a given value that lies within the interval.
  *
- * @param {val} float - The value of interest.
- * @param {intervalLower} - The lower boundary of the interval.
- * @param {intervalUpper} - The upper boundary of the interval.
+ * @param {number} val - The value of interest.
+ * @param {number} intervalLower - The lower boundary of the interval.
+ * @param {number} intervalUpper - The upper boundary of the interval.
+ * @returns {number} - The value within the interval that is closest to the value of interest.
  */
 function closestTo(val, intervalLower, intervalUpper) {
   if (val >= intervalLower && val <= intervalUpper) {
@@ -182,6 +184,13 @@ function closestTo(val, intervalLower, intervalUpper) {
   }
 }
 
+/**
+ * Computes the Euclidean distance between two points.
+ *
+ * @param {{ x: number, y: number }} a - The first point.
+ * @param {{ x: number, y: number }} b - The second point.
+ * @returns {number} - The Euclidean distance.
+ */
 function euclidean(a, b) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 }
@@ -195,6 +204,15 @@ function applyMove(direction, target) {
   }
 }
 
+/**
+ * Finds the governing focusable elements within a container element.
+ *
+ * That it finds the "governing" elements means it finds only the top-most
+ * focusable elements, without their descendants.
+ *
+ * @param {Element} containerElem - The element within which to look.
+ * @returns {Array<Element>} - The governing focusable elements.
+ */
 function getFocusableElements(containerElem) {
   containerElem = containerElem || document.body;
   const selector =
@@ -225,7 +243,8 @@ function getFocusableElements(containerElem) {
 
 /**
  * Focuses the first element in the given navigation group.
- * @param {HTMLElement} group - The navigation group element.
+ * @param {string} direction - The name of the movement direction.
+ * @param {Element} group - The navigation group element.
  */
 function focusFirstElement(direction, group) {
   const firstElement = getFocusableElements(group).find((_) => true);
@@ -236,7 +255,8 @@ function focusFirstElement(direction, group) {
 
 /**
  * Focuses the last element in the given navigation group.
- * @param {HTMLElement} group - The navigation group element.
+ * @param {string} direction - The name of the movement direction.
+ * @param {Element} group - The navigation group element.
  */
 function focusLastElement(direction, group) {
   const lastElement = getFocusableElements(group).findLast((_) => true);
@@ -247,7 +267,8 @@ function focusLastElement(direction, group) {
 
 /**
  * Focuses the active element in the given navigation group.
- * @param {HTMLElement} group - The navigation group element.
+ * @param {string} direction - The name of the movement direction.
+ * @param {Element} group - The navigation group element.
  */
 function focusActiveElement(direction, group) {
   const activeElement = getFocusableElements(group).find((elem) =>
@@ -261,7 +282,7 @@ function focusActiveElement(direction, group) {
 /**
  * Moves focus linearly in the direction of "travel".
  * @param {string} direction - The name of the movement direction.
- * @param {HTMLElement} group - The navigation group element.
+ * @param {Element} group - The navigation group element.
  */
 function focusLinear(direction, group) {
   direction === "ArrowUp"
