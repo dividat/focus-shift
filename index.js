@@ -48,42 +48,50 @@ function handleGroupNavigation(direction, group) {
  * @param {HTMLElement} focusedElement - The currently focused element.
  */
 function handleMove(direction, focusedElement) {
-    const tabbableElements = getTabbableElements()
+    let nextParent = focusedElement || document.body
+    let candidateElements = []
 
-    // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement#value
-    if (focusedElement == null || focusedElement === document.body) {
-	// TODO Direction -- treat `body` as linear group?
-        if (tabbableElements[0]) applyMove(direction, tabbableElements[0]);
-    }
-
-    // Annotate elements with bounding boxes
     const focusedRect = focusedElement.getBoundingClientRect()
-    const annotatedElements = tabbableElements.map(element => {
-        return {
-            element: element,
-            rect: element.getBoundingClientRect()
+
+    do {
+        nextParent = (nextParent.parentElement.closest('[data-focus-group]')) || document.body
+        focusableElements = getFocusableElements(nextParent)
+
+        // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement#value
+        if (focusedElement == null || focusedElement === document.body) {
+	    // TODO Direction -- treat `body` as linear group?
+            if (focusableElements[0]) applyMove(direction, focusableElements[0]);
+            return;
         }
-    })
+    
+        // Annotate elements with bounding boxes
+        const annotatedElements = focusableElements.map(element => {
+            return {
+                element: element,
+                rect: element.getBoundingClientRect()
+            }
+        })
+    
+        annotatedElements.forEach(elem => elem.element.style.background = null)
+    
+        // Filter elements based on direction
+        candidateElements = annotatedElements.filter(({ rect }) => {
+            switch (direction) {
+                case 'ArrowLeft':
+                    return Math.floor(rect.right) <= focusedRect.left
+                case 'ArrowUp':
+                    return Math.floor(rect.bottom) <= focusedRect.top
+                case 'ArrowRight':
+                    return Math.ceil(rect.left) >= focusedRect.right
+                case 'ArrowDown':
+                    return Math.ceil(rect.top) >= focusedRect.bottom
+                default:
+                    return false
+            }
+        })
+    } while (candidateElements.length === 0 && nextParent !== document.body)
 
-    annotatedElements.forEach(elem => elem.element.style.background = null)
-
-    // Filter elements based on direction
-    const filteredElements = annotatedElements.filter(({ rect }) => {
-        switch (direction) {
-            case 'ArrowLeft':
-                return Math.floor(rect.right) <= focusedRect.left
-            case 'ArrowUp':
-                return Math.floor(rect.bottom) <= focusedRect.top
-            case 'ArrowRight':
-                return Math.ceil(rect.left) >= focusedRect.right
-            case 'ArrowDown':
-                return Math.ceil(rect.top) >= focusedRect.bottom
-            default:
-                return false
-        }
-    })
-
-    const sortedElements = filteredElements.sort((a, b) => {
+    const sortedElements = candidateElements.sort((a, b) => {
         const distanceA = calculateTargetedDistance(focusedRect, a.rect)
         const distanceB = calculateTargetedDistance(focusedRect, b.rect)
         return distanceA - distanceB
@@ -106,8 +114,6 @@ function handleMove(direction, focusedElement) {
                 return false
 	}
     }
-
-	console.log(sortedElements)
 
     // Focus the closest element if available
     if (sortedElements.length > 0) {
@@ -147,20 +153,27 @@ function applyMove(direction, target) {
 	}
 }
 
-function getTabbableElements(containerElem) {
-    const tabbableElements = Array.from(
-        (containerElem || document).querySelectorAll(
-            '[data-focus-group], [tabindex], a[href], button:not([disabled]), input[type=button]:not([disabled]), [contenteditable="true"], summary'
-        )
-    )
-    return tabbableElements.filter(
+function getFocusableElements(containerElem) {
+    containerElem = containerElem || document.body
+    const selector = '[data-focus-group], [tabindex], a[href], button:not([disabled]), input[type=button]:not([disabled]), [contenteditable="true"], summary'
+
+    // Find the focusable elements within the container
+    const focusableElements = Array.from(
+        containerElem.querySelectorAll(selector)
+    ).filter(
         el =>
             !el.hasAttribute('tabindex') || el.getAttribute('tabindex') !== '-1'
     ).filter(
         el =>
             !el.hasAttribute('data-focus-mute') && el.closest('[data-focus-mute]') == null
     )
-	    
+
+    // Reduce to the focusable elements highest up the tree
+    const topMost = focusableElements.filter(elem => {
+	    return elem.parentElement.closest(selector) === containerElem || containerElem === document.body
+    })
+
+    return topMost
 }
 
 /**
@@ -168,7 +181,7 @@ function getTabbableElements(containerElem) {
  * @param {HTMLElement} group - The navigation group element.
  */
 function focusFirstElement(direction, group) {
-    const firstElement = getTabbableElements(group).find(_ => true)
+    const firstElement = getFocusableElements(group).find(_ => true)
     if (firstElement) {
         applyMove(direction, firstElement);
     }
@@ -179,8 +192,7 @@ function focusFirstElement(direction, group) {
  * @param {HTMLElement} group - The navigation group element.
  */
 function focusLastElement(direction, group) {
-    // TODO This does not do what we want, as it selects items deep down the tree
-    const lastElement = getTabbableElements(group).findLast(_ => true)
+    const lastElement = getFocusableElements(group).findLast(_ => true)
     if (lastElement) {
         applyMove(direction, lastElement);
     }
@@ -191,7 +203,7 @@ function focusLastElement(direction, group) {
  * @param {HTMLElement} group - The navigation group element.
  */
 function focusActiveElement(direction, group) {
-    const activeElement = getTabbableElements(group).find(elem => elem.hasAttribute('data-focus-active'));
+    const activeElement = getFocusableElements(group).find(elem => elem.hasAttribute('data-focus-active'));
     if (activeElement) {
         applyMove(direction, activeElement);
     }
