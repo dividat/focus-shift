@@ -1,0 +1,23 @@
+.nav-group {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.rows .nav-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.columns .nav-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+button {
+  margin: 5px;
+}
+:focus {
+  outline: 3px yellow solid;
+}

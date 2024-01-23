@@ -1,55 +1,75 @@
 # focus-shift
 
-## Introduction
-focus-shift is a lightweight JavaScript library designed for keyboard-based navigation in web applications. It allows users to move focus between elements using the arrow keys. The behaviour of focus shifting can be guided by annotations in the HTML markup.
-
-The library is kept simple and assumes use in kiosk-like interfaces.
+focus-shift is a lightweight, zero-dependency JavaScript library designed for keyboard-based navigation in web applications. It restricts itself to shifting focus between elements in response to arrow key events. The behaviour of focus shifting can be guided by annotations in the HTML markup. This allows the library to work well with technologies that prefer generating HTML over interacting with JavaScript directly.
 
 ## Features
-- Move focus with arrow keys
+
+- Move focus with the arrow keys
 - Declare groups with custom focus strategies
-- Mark subtrees of the DOM as muted
+- Mark subtrees of the DOM that should trap focus
+- Mark subtrees of the DOM that should be skipped
 
 ## Usage
+
 Include the library in your HTML file:
+
 ```html
 <script src="focus-shift.js"></script>
 ```
 
 ### Basic Example
-Here's a simple example of how to use the library:
+
+Here's a simple example of annotating markup:
 
 ```html
-<div data-focus-group data-focus-group-select="active">
+<div data-focus-group="active">
   <button>Home</button>
-  <button data-focus-group-active>About</button>
+  <button data-focus-active>About</button>
   <button>Contact</button>
 </div>
+
+<button data-focus-skip>Delete your account</button>
 ```
 
 ## Options
 
-The following attributes may be added in the markup to guide the moving of focus"
+The following attributes may be added in the markup to guide the moving of focus:
 
-- `data-focus-group`: Defines a navigation group.
-- `data-focus-group-select`: Determines the initial focus when focus moves to a group.
+- `data-focus-group`: Defines a navigation group and the initial focus when focus moves to a group. Default is `linear`.
   - `first`: The first element in the DOM order receives focus.
   - `last`: The last element in the DOM order is focused initially.
   - `active`: Focuses on the element within the group marked as active.
   - `linear`: Focus is determined by the spatial direction of user navigation.
-- `data-focus-group-active`: Marks an element as the currently active element within a group.
-- `data-focus-mute`: Skips the element and its descendants in navigation.
-- `data-focus-solo`: Focuses within this element only, ignoring others in the same group.
+  - `memorize`: The last focused element within the group receives focus again.
+- `data-focus-active`: Marks an element as the currently active element within a group.
+- `data-focus-skip`: Skips the element and its descendants in navigation.
+- `data-focus-trap`: Only allows elements within the annotated layer to receive focus.
 
-## Limitations and simplifying assumptions
-- **Arrow key navigation only**: The library listens only to arrow key events for navigation.
-- **No iframe or ShadowDOM support**: Does not handle navigation within iframes or shadow DOM elements.
-- **Viewport-filling applications without scrollbars**: Optimized for applications that fill the viewport without scrolling.
-- **Exclusion of conflicting elements**: Avoids navigation to inputs like radio buttons to simplify navigation logic.
+## Principles and Scope
 
-These limitations are intentional to keep the library simple and focused.
+- **It doesn't just work.** It would be nice if focus could automatically move to the intuitive element in each case, but this seems to require a sophisticated model of visual weight and Gestalt principles. This is out of scope for a simple library like this.
+- **It should be easy to make it work.** With a little bit of annotation in the markup, one can express relationships to help the algorithm move focus in an adequate way.
+- **Annotations should be logical, not spatial.** To be useful in responsive layouts, the annotations should express logical rather than spatial relationships.
+- **Keep state to a minimum.** As much as possible, the library should treat each event in isolation and not maintain state representing the page layout. This may make the library less performant, but avoids complicated and error prone recomputation logic.
 
-## Mechanism
+### What the library doesn't do, but might
+
+- Dispatch cancelable events when descending into or out of groups
+- Dispatch cancelable events before applying focus to an element
+- Treat elements in open shadow DOM as focusable
+- Allow defining custom selectors for focusables
+- Use focus heuristics based on user agent's text direction
+- Offer a JavaScript API
+
+### What the library probably shouldn't do
+
+- Handle keyboard events other than arrow keys
+
+### What the library can not do
+
+- Handle focus in iframes or closed shadow DOM
+
+### Mechanism
 
 ```mermaid
 flowchart TB
@@ -91,8 +111,26 @@ flowchart TB
     Activate --> Idle
 ```
 
+## Development
+
+The library is implemented in [withered](https://en.wikipedia.org/wiki/Gunpei_Yokoi#Lateral_Thinking_with_Withered_Technology) JavaScript, so it should work directly with most browsers and a development server is not needed.
+
+There is ample JSDoc documentation so that the TypeScript compiler may be used for typechecking in strict mode:
+
+    npm test
+
+The code is formatted with slightly non-standard prettier:
+
+    npm run format
+
+End-to-end tests are done using Cypress.
+
 ## Contributing
+
 Contributions are welcome. Please fork the repository and submit a pull request with your proposed changes.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details.
+
+(C) Copyright 2024 Dividat AG
+
+Published under the MIT License. See [LICENSE](LICENSE) for details.
