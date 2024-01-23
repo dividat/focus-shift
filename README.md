@@ -32,7 +32,7 @@ Here's a simple example of how to use the library:
 The following attributes may be added in the markup to guide the moving of focus"
 
 - `data-focus-group`: Defines a navigation group.
-- `data-focus-group-select`: Determines the initial focus when focus moves to a group.
+- `data-focus-group-strategy`: Determines the initial focus when focus moves to a group. Default is `linear`.
   - `first`: The first element in the DOM order receives focus.
   - `last`: The last element in the DOM order is focused initially.
   - `active`: Focuses on the element within the group marked as active.
