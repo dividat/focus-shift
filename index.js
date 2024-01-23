@@ -25,7 +25,7 @@ function handleKeyDown(event) {
  * @param {Element} group - The navigation group element.
  */
 function handleGroupNavigation(direction, group) {
-  const strategy = group.getAttribute("data-focus-group-strategy") || "linear";
+  const strategy = group.getAttribute("data-focus-group") || "linear";
   console.debug("Handling group", strategy, direction, group);
   switch (strategy) {
     case "first":
@@ -226,8 +226,8 @@ function getFocusableElements(containerElem) {
     )
     .filter(
       (el) =>
-        !el.hasAttribute("data-focus-mute") &&
-        el.closest("[data-focus-mute]") == null
+        !el.hasAttribute("data-focus-skip") &&
+        el.closest("[data-focus-skip]") == null
     );
 
   // Reduce to the focusable elements highest up the tree

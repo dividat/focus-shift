@@ -19,21 +19,21 @@
   </head>
   <body>
     <button>Orphan Button</button>
-    <div class="nav-group" data-focus-group data-focus-group-strategy="first">
+    <div class="nav-group" data-focus-group="first">
       <em><kbd>first</kbd> group</em>
       <button>First Button</button>
       <button>Second Button</button>
       <button>Third Button</button>
     </div>
 
-    <div class="nav-group" data-focus-group data-focus-group-strategy="last">
+    <div class="nav-group" data-focus-group="last">
       <em><kbd>last</kbd> group</em>
       <button>Button 1</button>
       <button>Button 2</button>
       <div
         class="nav-group"
         data-focus-group
-        data-focus-group-strategy="active"
+        data-focus-group="active"
       >
         <em><kbd>active</kbd> group</em>
         <div><button>Sub-button 1</button></div>
@@ -41,7 +41,7 @@
           class="nav-group"
           data-focus-active
           data-focus-group
-          data-focus-group-strategy="last"
+          data-focus-group="last"
         >
           <em><kbd>last</kbd> group (itself <kbd>active</kbd>)</em>
           <button data-focus-active>Sub-sub-button 1</button>
@@ -51,23 +51,23 @@
       </div>
     </div>
 
-    <div class="nav-group" data-focus-group data-focus-group-strategy="linear">
+    <div class="nav-group" data-focus-group="linear">
       <em><kbd>linear</kbd> group</em>
       <div><button>Button 1</button></div>
       <div><button>Button 2</button></div>
       <div><button>Button 3</button></div>
     </div>
 
-    <div class="nav-group" data-focus-group data-focus-group-strategy="active">
+    <div class="nav-group" data-focus-group="active">
       <em><kbd>active</kbd> group</em>
       <button>Alpha</button>
       <button data-focus-active>Beta (Active)</button>
       <button>Gamma</button>
     </div>
 
-    <div class="nav-group" data-focus-group data-focus-group-strategy="first">
-      <em><kbd>first</kbd> group with muted</em>
-      <button data-focus-mute>Muted Button</button>
+    <div class="nav-group" data-focus-group="first">
+      <em><kbd>first</kbd> group with skipped descendant</em>
+      <button data-focus-skip>Skipped Button</button>
       <button>Normal Button 1</button>
       <button>Normal Button 2</button>
       <button>Normal Button 3</button>
@@ -80,8 +80,8 @@
       <div><button>Button 3</button></div>
     </div>
 
-    <div class="nav-group" data-focus-mute>
-      <em>Muted group</em>
+    <div class="nav-group" data-focus-skip>
+      <em>Skipped group</em>
       <button>Button 1</button>
       <button>Button 2</button>
       <button>Button 3</button>

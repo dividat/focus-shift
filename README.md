@@ -20,7 +20,7 @@ Include the library in your HTML file:
 Here's a simple example of how to use the library:
 
 ```html
-<div data-focus-group data-focus-group-select="active">
+<div data-focus-group="active">
   <button>Home</button>
   <button data-focus-group-active>About</button>
   <button>Contact</button>
@@ -31,15 +31,13 @@ Here's a simple example of how to use the library:
 
 The following attributes may be added in the markup to guide the moving of focus"
 
-- `data-focus-group`: Defines a navigation group.
-- `data-focus-group-strategy`: Determines the initial focus when focus moves to a group. Default is `linear`.
+- `data-focus-group`: Defines a navigation group and the initial focus when focus moves to a group. Default is `linear`.
   - `first`: The first element in the DOM order receives focus.
   - `last`: The last element in the DOM order is focused initially.
   - `active`: Focuses on the element within the group marked as active.
   - `linear`: Focus is determined by the spatial direction of user navigation.
 - `data-focus-group-active`: Marks an element as the currently active element within a group.
-- `data-focus-mute`: Skips the element and its descendants in navigation.
-- `data-focus-solo`: Focuses within this element only, ignoring others in the same group.
+- `data-focus-skip`: Skips the element and its descendants in navigation.
 
 ## Limitations and simplifying assumptions
 - **Arrow key navigation only**: The library listens only to arrow key events for navigation.
