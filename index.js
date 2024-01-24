@@ -110,7 +110,8 @@ function handleMove(direction, focusedElement) {
   function calculateTargetedDistance(direction, originElem, targetElem) {
     switch (direction) {
       case "ArrowLeft":
-        return euclidean(
+        return directionWeightedDistance(
+          { x: -1, y: 0 },
           { x: originElem.left, y: (originElem.top + originElem.bottom) / 2 },
           {
             x: targetElem.right,
@@ -122,7 +123,8 @@ function handleMove(direction, focusedElement) {
           }
         );
       case "ArrowUp":
-        return euclidean(
+        return directionWeightedDistance(
+          { x: 0, y: -1 },
           { x: (originElem.left + originElem.right) / 2, y: originElem.top },
           {
             x: closestTo(
@@ -134,7 +136,8 @@ function handleMove(direction, focusedElement) {
           }
         );
       case "ArrowRight":
-        return euclidean(
+        return directionWeightedDistance(
+          { x: 1, y: 0 },
           { x: originElem.right, y: (originElem.top + originElem.bottom) / 2 },
           {
             x: targetElem.left,
@@ -146,7 +149,8 @@ function handleMove(direction, focusedElement) {
           }
         );
       case "ArrowDown":
-        return euclidean(
+        return directionWeightedDistance(
+          { x: 0, y: 1 },
           { x: (originElem.left + originElem.right) / 2, y: originElem.bottom },
           {
             x: closestTo(
@@ -166,6 +170,32 @@ function handleMove(direction, focusedElement) {
   if (sortedElements.length > 0) {
     applyMove(direction, sortedElements[0].element);
   }
+}
+
+function directionWeightedDistance(idealDirection, pointFrom, pointTo) {
+  const displacement = add(pointTo, scale(-1, pointFrom));
+  const displacementDirection = scale(1 / length(displacement), displacement);
+  return (
+    euclidean(pointFrom, pointTo) /
+    // Use the of the dot product to penalize more extreme angles more
+    dot(idealDirection, displacementDirection) ** 2
+  );
+}
+
+function add(vec1, vec2) {
+  return { x: vec1.x + vec2.x, y: vec1.y + vec2.y };
+}
+
+function length(vec) {
+  return Math.sqrt(vec.x ** 2 + vec.y ** 2);
+}
+
+function scale(scalar, vec) {
+  return { x: scalar * vec.x, y: scalar * vec.y };
+}
+
+function dot(vec1, vec2) {
+  return vec1.x * vec2.x + vec1.y * vec2.y;
 }
 
 /**
