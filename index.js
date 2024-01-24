@@ -16,7 +16,9 @@ function handleKeyDown(event) {
     return;
   }
 
+  console.group(event.key);
   handleMove(event.key, document.activeElement);
+  console.groupEnd(event.key);
 }
 
 /**
