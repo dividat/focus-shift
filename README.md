@@ -49,6 +49,48 @@ The following attributes may be added in the markup to guide the moving of focus
 
 These limitations are intentional to keep the library simple and focused.
 
+## Mechanism
+
+```mermaid
+flowchart TB
+    Idle(((Idle))) == keypress ==> D_KP{Is arrow key?}
+    %% Terminology from https://github.com/whatwg/html/issues/897
+    D_KP -- Yes --> A_BC[Get top blocking element]
+    D_KP -- No --> Idle
+    A_BC --> D_AE{Contains activeElement?}
+    D_AE -- No --> A_SI[Select initial focus]
+    A_SI --> Idle
+    D_AE -- Yes --> Find
+
+    subgraph Find
+        direction TB
+        A_FC[Find candidates within next parent group]
+        A_FC --> D_CF{Candidates found?}
+        D_CF -- Yes --> A_SN[Stop with candidates]
+        D_CF -- No --> D_PB[Is parent the top blocking element?]
+        D_PB -- Yes --> A_NC[Stop with no candidates]
+        D_PB -- No --> A_FC
+    end
+
+    Find --> D_HC[One or more candidates?]
+    D_HC -- Yes --> Activate
+    D_HC -- No --> Idle
+
+    subgraph Activate
+        direction TB
+        D_DP[Direct projection along movement axis non-empty?] -- Yes --> A_FD[Reduce to only those candidates]
+        D_DP -- No --> A_CA[Continue with all candidates]
+        A_CA --> A_SC[Select candidate with lowest Euclidean distance]
+        A_FD --> A_SC
+        A_SC --> D_CG[Is selected candidate a group?]
+        D_CG -- Yes --> A_DG[Select new candidate based on group's strategy]
+        A_DG --> D_CG
+        D_CG -- No --> A_FS[Focus selected candidate]
+    end
+
+    Activate --> Idle
+```
+
 ## Contributing
 Contributions are welcome. Please fork the repository and submit a pull request with your proposed changes.
 
