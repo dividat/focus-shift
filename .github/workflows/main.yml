@@ -1,5 +1,12 @@
 name: Chrome
-on: push
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Allows to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 jobs:
   chrome:
     runs-on: ubuntu-22.04
