@@ -129,6 +129,12 @@ End-to-end tests are done using Cypress.
 
 Contributions are welcome. Please fork the repository and submit a pull request with your proposed changes.
 
+## Related Work and Inspiration
+
+- https://github.com/bbc/lrud-spatial, a nice and simple but more spatially oriented library
+- https://github.com/luke-chang/js-spatial-navigation, spatial navigation library with good functionality but JavaScript-focused and stateful configuration
+- https://github.com/WICG/spatial-navigation, a possibly abandoned proposal for a Web Platform API
+
 ## License
 
 (C) Copyright 2024 Dividat AG
