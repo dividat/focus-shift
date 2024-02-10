@@ -11,14 +11,6 @@ focus-shift is a lightweight, zero-dependency JavaScript library designed for ke
 
 ## Usage
 
-Include the library in your HTML file:
-
-```html
-<script src="focus-shift.js"></script>
-```
-
-### Basic Example
-
 Here's a simple example of annotating markup:
 
 ```html
@@ -29,6 +21,8 @@ Here's a simple example of annotating markup:
 </div>
 
 <button data-focus-skip>Delete your account</button>
+
+<script type="module" src="focus-shift.js"></script>
 ```
 
 ## Options
