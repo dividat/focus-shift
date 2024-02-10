@@ -45,6 +45,8 @@ The following attributes may be added in the markup to guide the moving of focus
 - `data-focus-skip`: Skips the element and its descendants in navigation.
 - `data-focus-trap`: Only allows elements within the annotated layer to receive focus.
 
+Setting `window.FOCUS_SHIFT_DEBUG = true` lets the library log processing steps to the browser's console.
+
 ## Principles and Scope
 
 - **It doesn't just work.** It would be nice if focus could automatically move to the intuitive element in each case, but this seems to require a sophisticated model of visual weight and Gestalt principles. This is out of scope for a simple library like this.

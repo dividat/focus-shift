@@ -28,10 +28,10 @@ function handleKeyDown(event) {
   ) {
     return
   } else {
-    condsole.group(event.key)
+    logging.group(`focus-shift: ${event.key}`)
     event.preventDefault()
     handleUserDirection(KEY_TO_DIRECTION[event.key])
-    condsole.groupEnd()
+    logging.groupEnd()
   }
 }
 
@@ -199,7 +199,7 @@ function getFocusCandidates(direction, activeElement, container) {
  * @returns {void}
  */
 function performMove(direction, originRect, candidates) {
-  condsole.debug("performMove", direction, originRect, candidates)
+  logging.debug("performMove", direction, originRect, candidates)
 
   const originPoint = makeOrigin(direction, originRect)
 
@@ -228,7 +228,7 @@ function performMove(direction, originRect, candidates) {
  * @returns {void}
  */
 function applyFocus(direction, origin, target) {
-  condsole.debug("applyFocus", direction, target)
+  logging.debug("applyFocus", direction, target)
 
   const parentGroup = target.closest("[data-focus-group]")
   if (
@@ -891,19 +891,22 @@ function getMinimumBy(array, toNumber) {
   return min
 }
 
-const condsole = /** @type {Console} */ (
+const logging = /** @type {Console} */ (
   new Proxy(console, {
     get: /** @type {(target: any, level: any) => any} */ (
       function (target, level) {
-        //return function () {}
-        if (level in target && typeof target[level] === "function") {
-          return /** @type {(args: any[]) => void} */ (
-            function (...args) {
-              target[level].apply(target, args)
-            }
-          )
-        } else if (level in target) {
-          return target[level]
+        if ("FOCUS_SHIFT_DEBUG" in window && window.FOCUS_SHIFT_DEBUG) {
+          if (level in target && typeof target[level] === "function") {
+            return /** @type {(args: any[]) => void} */ (
+              function (...args) {
+                target[level].apply(target, args)
+              }
+            )
+          } else if (level in target) {
+            return target[level]
+          }
+        } else {
+          return function () {}
         }
       }
     )
