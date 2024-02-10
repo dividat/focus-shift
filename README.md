@@ -60,7 +60,7 @@ Setting `window.FOCUS_SHIFT_DEBUG = true` lets the library log processing steps 
 - Dispatch cancelable events before applying focus to an element
 - Treat elements in open shadow DOM as focusable
 - Allow defining custom selectors for focusables
-- Use focus heuristics based on user agent's text direction
+- Use focus heuristics based on user agent's [text direction](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/dir)
 - Offer a JavaScript API
 
 ### What the library probably shouldn't do
