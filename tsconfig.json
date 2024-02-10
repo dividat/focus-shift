@@ -1,0 +1,19 @@
+{
+  "files": ["index.js"],
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "es2016",
+    "lib": ["es2016", "dom"],
+    "strict": true,
+
+    /* JSDoc checking */
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+
+    /* Interop Constraints */
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}

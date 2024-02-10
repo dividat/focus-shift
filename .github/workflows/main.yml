@@ -1,4 +1,4 @@
-name: Chrome
+name: Test suite
 on:
   push:
   pull_request:
@@ -6,11 +6,70 @@ on:
   workflow_dispatch:
 
 jobs:
-  chrome:
-    runs-on: ubuntu-22.04
+  formatting:
+    runs-on: ubuntu-latest
+    name: Formatting
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+
+      - run: npm install
+
+      - run: npx prettier --check .
+
+  typechecks:
+    runs-on: ubuntu-latest
+    name: Typechecks
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+
+      - run: npm install
+
+      - run: npx tsc
+
+  e2e-chrome:
+    runs-on: ubuntu-latest
     name: E2E on Chrome
     steps:
       - uses: actions/checkout@v4
+
       - uses: cypress-io/github-action@v6
         with:
           browser: chrome
+
+  e2e-firefox:
+    runs-on: ubuntu-latest
+    name: E2E on Firefox
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cypress-io/github-action@v6
+        with:
+          browser: firefox
+
+  e2e-edge:
+    runs-on: windows-latest
+    name: E2E on Edge
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cypress-io/github-action@v6
+        with:
+          browser: edge
+
+  e2e-safari:
+    runs-on: macos-latest
+    name: E2E on WebKit
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cypress-io/github-action@v6
+        with:
+          browser: webkit
