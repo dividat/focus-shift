@@ -28,9 +28,24 @@ function handleKeyDown(event) {
   ) {
     return
   } else {
+    const eventTarget = document.activeElement || document.body
+    const shiftFocusEvent = new CustomEvent("focus-shift:initiate", {
+      detail: { keyboardEvent: event },
+      cancelable: true,
+      bubbles: true
+    })
+    eventTarget.dispatchEvent(shiftFocusEvent)
+
     logging.group(`focus-shift: ${event.key}`)
-    event.preventDefault()
-    handleUserDirection(KEY_TO_DIRECTION[event.key])
+    if (shiftFocusEvent.defaultPrevented) {
+      logging.debug(
+        "Handling canceled via 'focus-shift:initiate' event",
+        shiftFocusEvent
+      )
+    } else {
+      event.preventDefault()
+      handleUserDirection(KEY_TO_DIRECTION[event.key])
+    }
     logging.groupEnd()
   }
 }
