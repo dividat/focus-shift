@@ -7,7 +7,8 @@ describe("focus-shift spec", () => {
       altKey: opts.altKey || false,
       getModifierState: function (name) {
         return opts.modifierState === name
-      }
+      },
+      repeat: opts.repeat || false
     }
   }
 
@@ -188,6 +189,16 @@ describe("focus-shift spec", () => {
       { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown" }) },
       { eventType: "focus", selector: "#before" },
       { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown" }) }
+    ])
+  )
+
+  it(
+    "allows canceling event handling",
+    testFor("./cypress/fixtures/events.html", { className: "rows" }, [
+      { eventType: "keydown", selector: "#button-1", options: keyevent({ key: "ArrowDown", repeat: false }) },
+      { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown", repeat: false }) },
+      { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown", repeat: true }) },
+      { eventType: "keydown", selector: "#button-3", options: keyevent({ key: "ArrowDown", repeat: false }) }
     ])
   )
 })

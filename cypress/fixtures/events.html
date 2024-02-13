@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="nav-group" id="no-repeats">
+      <div><button id="button-1">First Button</button></div>
+      <div><button id="button-2">Second Button</button></div>
+      <div><button id="button-3">Third Button</button></div>
+    </div>
+    <script src="../../index.js"></script>
+    <script>
+      document.getElementById("no-repeats").addEventListener("focus-shift:initiate", (event) => {
+        if (event.detail.keyboardEvent.repeat) event.preventDefault()
+      })
+    </script>
+  </body>
+</html>
