@@ -286,17 +286,24 @@ function applyFocus(direction, origin, target) {
  * @returns {Element}
  */
 function getBlockingElement() {
-  // Try top-layer pseudo class (2022+ browsers)
-  let trapElements = document.querySelectorAll(":modal")
+  /** @type {Element[]} */
+  let trapElements = []
+  try {
+    // Try top-layer pseudo class (2022+ browsers)
+    trapElements = Array.from(document.querySelectorAll(":modal"))
+  } catch (e) {
+    logging.debug("Browser does not support ':modal' selector, ignoring.")
+  }
   // If none, use fallback selector
   if (trapElements.length === 0) {
-    trapElements = document.querySelectorAll("dialog[open], [data-focus-trap]")
+    trapElements = Array.from(
+      document.querySelectorAll("dialog[open], [data-focus-trap]")
+    )
   }
 
   // If no explicit trap elements were found, body is the top element
   return (
-    getMinimumBy(Array.from(trapElements), (elem) => -getTrapIndex(elem)) ||
-    document.body
+    getMinimumBy(trapElements, (elem) => -getTrapIndex(elem)) || document.body
   )
 }
 
