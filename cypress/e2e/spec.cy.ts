@@ -201,4 +201,28 @@ describe("focus-shift spec", () => {
       { eventType: "keydown", selector: "#button-3", options: keyevent({ key: "ArrowDown", repeat: false }) }
     ])
   )
+
+  it("allows preventing scroll", function () {
+    cy.visit("./cypress/fixtures/scroll.html")
+    function testScroll(id, assert) {
+      cy.window()
+        .its("scrollX")
+        .then((scrollXBefore) => {
+          const firstButton = cy.get(id)
+          firstButton.focus()
+          firstButton.trigger("keydown", keyevent({ key: "ArrowRight" }))
+          cy.window()
+            .its("scrollX")
+            .then((scrollXAfter) => {
+              assert(scrollXBefore, scrollXAfter)
+            })
+        })
+    }
+    testScroll("#prevent", function (before, after) {
+      expect(before).to.equal(after)
+    })
+    testScroll("#no-prevent", function (before, after) {
+      expect(before).to.not.equal(after)
+    })
+  })
 })
