@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="nav-group" style="display: flex; gap: 100vw">
+      <div><button id="prevent">First Button</button></div>
+      <div><button data-focus-prevent-scroll>Don't scroll here</button></div>
+    </div>
+
+    <div class="nav-group" style="display: flex; gap: 100vw" id="no-prevent-scroll">
+      <div><button id="no-prevent">First Button</button></div>
+      <div><button>Scroll Here</button></div>
+    </div>
+    <script src="../../index.js"></script>
+  </body>
+</html>

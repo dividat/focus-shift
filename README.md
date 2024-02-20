@@ -8,6 +8,7 @@ focus-shift is a lightweight, zero-dependency JavaScript library designed for ke
 - Declare groups with custom focus strategies
 - Mark subtrees of the DOM that should trap focus
 - Mark subtrees of the DOM that should be skipped
+- Mark elements to not trigger scrolling when receiving focus
 - Dispatches events which allow canceling individual focus shifts
 
 ## Usage
@@ -39,6 +40,7 @@ The following attributes may be added in the markup to guide the moving of focus
 - `data-focus-active`: Marks an element as the currently active element within a group.
 - `data-focus-skip`: Skips the element and its descendants in navigation.
 - `data-focus-trap`: Only allows elements within the annotated layer to receive focus.
+- `data-focus-prevent-scroll`: Prevents scrolling when the element receives focus.
 
 Setting `window.FOCUS_SHIFT_DEBUG = true` lets the library log processing steps to the browser's console.
 

@@ -258,7 +258,8 @@ function applyFocus(direction, origin, target) {
   if (isGroup(target)) {
     dispatchGroupFocus(direction, origin, target)
   } else if ("focus" in target && typeof target.focus === "function") {
-    target.focus()
+    const preventScroll = target.hasAttribute("data-focus-prevent-scroll")
+    target.focus({ preventScroll: preventScroll })
   }
 }
 
