@@ -24,7 +24,9 @@ describe("focus-shift spec", () => {
       for (let pair of sequence) {
         switch (pair.eventType) {
           case "focus":
-            cy.get(pair.selector).focus()
+            cy.get(pair.selector).then(($elem) => {
+              $elem[0].focus()
+            })
             break
           default:
             cy.get("body")
