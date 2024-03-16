@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      button {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="button-1">First Button</button>
+
+    <details>
+      <summary id="summary-1">Toggled Group</summary>
+      <button id="group-button-1">Group Button 1</button>
+      <button id="group-button-2">Group Button 2</button>
+      <details>
+        <summary id="summary-2">Toggle in Toggle</summary>
+        <button id="subgroup-button-1">Subgroup Button 1</button>
+        <button id="subgroup-button-2">Subgroup Button 2</button>
+      </details>
+    </details>
+
+    <button id="button-2">Last Button</button>
+
+    <script src="../../index.js"></script>
+  </body>
+</html>

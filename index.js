@@ -135,6 +135,7 @@ function getFocusableElements(container) {
  * - it has negative tabindex,
  * - it has been marked with `data-focus-skip`,
  * - it is a descendant of an element marked with `data-focus-skip`,
+ * - it is a descendant of a closed `details` element,
  * - it is `disabled`,
  * - it is `inert`.
  *
@@ -148,18 +149,40 @@ function getFocusableElements(container) {
 function isFocusable(element) {
   // Has negative tabindex attribute explicitly set
   if (parseInt(element.getAttribute("tabindex") || "", 10) <= -1) return false
+  // Is inert
+  if ("inert" in element && element.inert) return false
+  // Is disabled
+  if ("disabled" in element && element.disabled) return false
   // Is or descends from skipped element
   if (
     element.hasAttribute("data-focus-skip") ||
     element.closest("[data-focus-skip]") != null
   )
     return false
-  // Is inert
-  if ("inert" in element && element.inert) return false
-  // Is disabled
-  if ("disabled" in element && element.disabled) return false
+  // Descends from closed details element
+  if (hasClosedDetailsAncestor(element)) return false
 
   return true
+}
+
+/**
+ * Tests whether the element is contained within a closed `details` element.
+ *
+ * `summary` elements are excluded (return value `false`) if they are the summary of the top-most
+ * closed `details` element.
+ *
+ * @param {Element} element
+ * @returns {boolean} - True if the element is hidden because of descending from closed `details`
+ */
+function hasClosedDetailsAncestor(element) {
+  if (element.parentElement == null) return false
+
+  const parentElement = element.parentElement
+  if (element.tagName === "SUMMARY") {
+    return hasClosedDetailsAncestor(parentElement)
+  } else {
+    return parentElement.closest("details:not([open])") != null
+  }
 }
 
 /**
