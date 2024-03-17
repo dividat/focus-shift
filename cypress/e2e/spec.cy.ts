@@ -23,8 +23,13 @@ describe("focus-shift spec", () => {
 
       for (let pair of sequence) {
         switch (pair.eventType) {
+          case "click":
+            cy.get(pair.selector).click()
+            break
           case "focus":
-            cy.get(pair.selector).focus()
+            cy.get(pair.selector).then(($elem) => {
+              $elem[0].focus()
+            })
             break
           default:
             cy.get("body")
@@ -188,6 +193,28 @@ describe("focus-shift spec", () => {
       { eventType: "keydown", selector: "#button-1", options: keyevent({ key: "ArrowDown" }) },
       { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown" }) },
       { eventType: "focus", selector: "#before" },
+      { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown" }) }
+    ])
+  )
+
+  it(
+    "ignores contents of closed details element",
+    testFor("./cypress/fixtures/details.html", { className: "rows" }, [
+      { eventType: "keydown", selector: "#button-1", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#summary-1", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#summary-1", options: keyevent({ key: "ArrowUp" }) },
+      { eventType: "click", selector: "#summary-1" },
+      { eventType: "focus", selector: "#summary-1" },
+      { eventType: "keydown", selector: "#group-button-1", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#group-button-2", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#summary-2", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#summary-2", options: keyevent({ key: "ArrowUp" }) },
+      { eventType: "click", selector: "#summary-2" },
+      { eventType: "focus", selector: "#summary-2" },
+      { eventType: "keydown", selector: "#subgroup-button-1", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#subgroup-button-2", options: keyevent({ key: "ArrowDown" }) },
       { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown" }) }
     ])
   )
