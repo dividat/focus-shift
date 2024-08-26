@@ -866,7 +866,7 @@ function closestTo(val, intervalLower, intervalUpper) {
 
 /**
  * Tests whether the candidate lies within the directed projection from the origin.
- ii*
+ *
  * @param {Direction} direction
  * @param {DOMRect} origin
  * @param {DOMRect} candidate
