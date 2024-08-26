@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .nav-group {
+        width: 800px;
+        height: 600px;
+      }
+      #button-big {
+        align-self: stretch;
+      }
+      #button-small {
+        align-self: center;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- With two group items, one spanning the entire length along the
+      direction of movement, we expect this expansive item to be chosen.
+    -->
+    <div class="nav-group" data-focus-group="linear">
+      <button id="button-big">Big Button</button>
+      <button id="button-small">Small Button</button>
+    </div>
+    <script src="../../index.js"></script>
+  </body>
+</html>
