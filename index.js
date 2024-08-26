@@ -77,7 +77,7 @@ function handleUserDirection(direction) {
  * Standard heuristics are used to determine which element should be the first to receive focus.
  *
  * 1. Look for elements with explicit tabindex attribute set, choose lowest index > 0
- * 2. If no tabindex was set, treat container as a 'first' group
+ * 2. If no tabindex was set, treat container as a 'linear' group
  *
  * @param {Direction} direction
  * @param {Element} container
