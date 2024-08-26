@@ -515,7 +515,7 @@ function focusActiveElement(direction, origin, group) {
 function focusLinear(direction, origin, group) {
   const originPoint = makeOrigin(opposite(direction), origin)
   const candidates = getFocusableElements(group).map((candidate) =>
-    annotate(opposite(direction), origin, candidate)
+    annotate(direction, origin, candidate)
   )
   const bestCandidate = getMinimumBy(candidates, (candidate) =>
     euclidean(originPoint, candidate.point)
