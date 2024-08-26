@@ -187,6 +187,38 @@ describe("focus-shift spec", () => {
   )
 
   it(
+    "linear-type group with stretched item LR",
+    testFor("./cypress/fixtures/group-linear-stretch.html", { className: "rows" }, [
+      { eventType: "keydown", selector: "#button-big", options: keyevent({ key: "ArrowLeft" }) },
+      { eventType: "keydown", selector: "#button-small", options: keyevent({ key: "ArrowDown" }) }
+    ])
+  )
+
+  it(
+    "linear-type group with stretched item RL",
+    testFor("./cypress/fixtures/group-linear-stretch.html", { className: "rows" }, [
+      { eventType: "keydown", selector: "#button-big", options: keyevent({ key: "ArrowRight" }) },
+      { eventType: "keydown", selector: "#button-small", options: keyevent({ key: "ArrowDown" }) }
+    ])
+  )
+
+  it(
+    "linear-type group with stretched item TD",
+    testFor("./cypress/fixtures/group-linear-stretch.html", { className: "columns" }, [
+      { eventType: "keydown", selector: "#button-big", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#button-small", options: keyevent({ key: "ArrowRight" }) }
+    ])
+  )
+
+  it(
+    "linear-type group with stretched item DT",
+    testFor("./cypress/fixtures/group-linear-stretch.html", { className: "columns" }, [
+      { eventType: "keydown", selector: "#button-big", options: keyevent({ key: "ArrowUp" }) },
+      { eventType: "keydown", selector: "#button-small", options: keyevent({ key: "ArrowRight" }) }
+    ])
+  )
+
+  it(
     "memorize-type group TD",
     testFor("./cypress/fixtures/group-memorize.html", { className: "rows" }, [
       { eventType: "focus", selector: "#before" },

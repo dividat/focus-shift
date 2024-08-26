@@ -77,7 +77,7 @@ function handleUserDirection(direction) {
  * Standard heuristics are used to determine which element should be the first to receive focus.
  *
  * 1. Look for elements with explicit tabindex attribute set, choose lowest index > 0
- * 2. If no tabindex was set, treat container as a 'first' group
+ * 2. If no tabindex was set, treat container as a 'linear' group
  *
  * @param {Direction} direction
  * @param {Element} container
@@ -515,7 +515,7 @@ function focusActiveElement(direction, origin, group) {
 function focusLinear(direction, origin, group) {
   const originPoint = makeOrigin(opposite(direction), origin)
   const candidates = getFocusableElements(group).map((candidate) =>
-    annotate(opposite(direction), origin, candidate)
+    annotate(direction, origin, candidate)
   )
   const bestCandidate = getMinimumBy(candidates, (candidate) =>
     euclidean(originPoint, candidate.point)
