@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .opacityZero {
+        opacity: 0;
+      }
+      .displayNone {
+        display: none;
+      }
+      .visibilityHidden {
+        visibility: hidden;
+      }
+      .visibilityCollapse {
+        visibility: collapse;
+      }
+      .zeroWidth {
+        display: inline-block;
+        width: 0;
+        overflow: hidden;
+      }
+      .zeroHeight {
+        display: inline-block;
+        height: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="first-button">First Button</button>
+    <button class="opacityZero">Transparent Button</button>
+    <button class="displayNone">Hidden Button</button>
+    <button class="visibilityHidden">Hidden Button</button>
+    <button class="visibilityCollapse">Hidden Button</button>
+    <span tabindex="1" class="zeroWidth">Hidden Element</span>
+    <span tabindex="1" class="zeroHeight">Hidden Element</span>
+    <button id="last-button">Last Button</button>
+    <script src="../../index.js"></script>
+  </body>
+</html>

@@ -280,4 +280,12 @@ describe("focus-shift spec", () => {
       expect(before).to.not.equal(after)
     })
   })
+
+  it(
+    "ignores non-rendered elements",
+    testFor("./cypress/fixtures/non-rendered-elements.html", { className: "columns" }, [
+      { eventType: "keydown", selector: "#first-button", options: keyevent({ key: "ArrowRight" }) },
+      { eventType: "keydown", selector: "#last-button", options: keyevent({ key: "ArrowRight" }) }
+    ])
+  )
 })
