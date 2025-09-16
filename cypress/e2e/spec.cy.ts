@@ -266,6 +266,7 @@ describe("focus-shift spec", () => {
     const getScrollTop = () => cy.document().then((doc) => doc.scrollingElement.scrollTop)
 
     getScrollTop().then(initialScrollTop => {
+      expect(initialScrollTop).to.equal(0)
       cy
         .get("body").trigger("keydown", keyevent({ key: "ArrowDown" }))
         .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(1)))
