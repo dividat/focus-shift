@@ -268,11 +268,11 @@ describe("focus-shift spec", () => {
     getScrollTop().then(initialScrollTop => {
       cy
         .get("body").trigger("keydown", keyevent({ key: "ArrowDown" }))
-        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(initialScrollTop)))
-        .then(() => cy.get("body").trigger("keydown", keyevent({ key: "ArrowDown" })))
-        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(initialScrollTop)))
-        .then(() => cy.get("body").trigger("keydown", keyevent({ key: "ArrowDown" })))
-        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.not.equal(initialScrollTop)))
+        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(1)))
+        .then(() => cy.get("#first-button").trigger("keydown", keyevent({ key: "ArrowDown" })))
+        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(2)))
+        .then(() => cy.get("#second-button").trigger("keydown", keyevent({ key: "ArrowDown" })))
+        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.not.equal(3)))
     })
   })
 
