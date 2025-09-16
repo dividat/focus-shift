@@ -265,13 +265,15 @@ describe("focus-shift spec", () => {
     cy.visit("./cypress/fixtures/default-action-scroll.html")
     const getScrollTop = () => cy.document().then((doc) => doc.scrollingElement.scrollTop)
 
-    cy
-      .get("body").trigger("keydown", keyevent({ key: "ArrowDown" }))
-      .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(0)))
-      .then(() => cy.get("body").trigger("keydown", keyevent({ key: "ArrowDown" })))
-      .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(0)))
-      .then(() => cy.get("body").trigger("keydown", keyevent({ key: "ArrowDown" })))
-      .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.not.equal(0)))
+    getScrollTop().then(initialScrollTop => {
+      cy
+        .get("body").trigger("keydown", keyevent({ key: "ArrowDown" }))
+        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(initialScrollTop)))
+        .then(() => cy.get("body").trigger("keydown", keyevent({ key: "ArrowDown" })))
+        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(initialScrollTop)))
+        .then(() => cy.get("body").trigger("keydown", keyevent({ key: "ArrowDown" })))
+        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.not.equal(initialScrollTop)))
+    })
   })
 
   it("allows preventing scroll", function () {
