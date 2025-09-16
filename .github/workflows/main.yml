@@ -1,12 +1,12 @@
 name: Test suite
+permissions:
+  contents: read
+
 on:
   push:
   pull_request:
   # Allows to run this workflow manually from the Actions tab
   workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
   formatting:
