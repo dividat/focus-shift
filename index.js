@@ -43,8 +43,13 @@ function handleKeyDown(event) {
         shiftFocusEvent
       )
     } else {
-      event.preventDefault()
-      handleUserDirection(KEY_TO_DIRECTION[event.key])
+      const wasHandled = handleUserDirection(KEY_TO_DIRECTION[event.key])
+
+      if (wasHandled) {
+        // Prevent default action only if we found a candidate to shift focus to,
+        // otherwise maintain browser's default behaviour (e.g. scroll).
+        event.preventDefault()
+      }
     }
     logging.groupEnd()
   }
@@ -54,7 +59,7 @@ function handleKeyDown(event) {
  * Handle a user's request for focus shift.
  *
  * @param {Direction} direction
- * @returns {void}
+ * @returns {boolean} - Whether a spatial navigation action was performed
  */
 function handleUserDirection(direction) {
   const container = getBlockingElement()
@@ -62,13 +67,16 @@ function handleUserDirection(direction) {
 
   if (activeElement == null) {
     focusInitial(direction, container)
-    return
+    return true
   }
 
   const candidates = getFocusCandidates(direction, activeElement, container)
   if (candidates.length > 0) {
     performMove(direction, activeElement.getBoundingClientRect(), candidates)
+    return true
   }
+
+  return false
 }
 
 /**
