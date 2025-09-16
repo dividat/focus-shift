@@ -261,8 +261,24 @@ describe("focus-shift spec", () => {
     ])
   )
 
+  it("preserves scroll as default action", function () {
+    cy.visit("./cypress/fixtures/default-action-scroll.html")
+    const getScrollTop = () => cy.document().then((doc) => doc.scrollingElement.scrollTop)
+
+    getScrollTop().then(initialScrollTop => {
+      expect(initialScrollTop).to.equal(0)
+      cy
+        .get("body").trigger("keydown", keyevent({ key: "ArrowDown" }))
+        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(1)))
+        .then(() => cy.get("#first-button").trigger("keydown", keyevent({ key: "ArrowDown" })))
+        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.equal(2)))
+        .then(() => cy.get("#second-button").trigger("keydown", keyevent({ key: "ArrowDown" })))
+        .then(() => getScrollTop().then((scrollTop) => expect(scrollTop).to.not.equal(3)))
+    })
+  })
+
   it("allows preventing scroll", function () {
-    cy.visit("./cypress/fixtures/scroll.html")
+    cy.visit("./cypress/fixtures/prevent-scroll.html")
     const getScrollLeft = () => cy.document().then((doc) => doc.scrollingElement.scrollLeft)
     function testScroll(id, assert) {
       getScrollLeft().then((scrollLeftBefore) => {
