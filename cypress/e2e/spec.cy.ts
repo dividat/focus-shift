@@ -262,7 +262,7 @@ describe("focus-shift spec", () => {
   )
 
   it("allows preventing scroll", function () {
-    cy.visit("./cypress/fixtures/scroll.html")
+    cy.visit("./cypress/fixtures/prevent-scroll.html")
     const getScrollLeft = () => cy.document().then((doc) => doc.scrollingElement.scrollLeft)
     function testScroll(id, assert) {
       getScrollLeft().then((scrollLeftBefore) => {
