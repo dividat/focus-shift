@@ -72,8 +72,7 @@ function handleUserDirection(direction) {
 
   const candidates = getFocusCandidates(direction, activeElement, container)
   if (candidates.length > 0) {
-    performMove(direction, activeElement.getBoundingClientRect(), candidates)
-    return true
+    return performMove(direction, activeElement.getBoundingClientRect(), candidates)
   }
 
   return false
@@ -242,7 +241,7 @@ function getFocusCandidates(direction, activeElement, container) {
  * @param {Direction} direction
  * @param {DOMRect} originRect - The bounding box of the element that has focus at the time the move is initiated
  * @param {Array<AnnotatedElement>} candidates - The candidates from which to pick
- * @returns {void}
+ * @returns {boolean} - Whether a move has been performed
  */
 function performMove(direction, originRect, candidates) {
   logging.debug("performMove", direction, originRect, candidates)
@@ -262,6 +261,9 @@ function performMove(direction, originRect, candidates) {
   )
   if (bestCandidate != null) {
     applyFocus(direction, originRect, bestCandidate.element)
+    return true
+  } else {
+    return false
   }
 }
 
