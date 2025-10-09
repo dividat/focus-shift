@@ -1,6 +1,6 @@
 # focus-shift
 
-focus-shift is a lightweight, zero-dependency JavaScript library designed for keyboard-based navigation in web applications. It restricts itself to shifting focus between elements in response to arrow key events. The behaviour of focus shifting can be guided by annotations in the HTML markup. This allows the library to work well with technologies that prefer generating HTML over interacting with JavaScript directly.
+focus-shift is a lightweight, zero-dependency JavaScript library designed for keyboard-based navigation in web applications. It restricts itself to shifting focus between elements in response to arrow key events. The behavior of focus shifting can be guided by annotations in the HTML markup. This allows the library to work well with technologies that prefer generating HTML over interacting with JavaScript directly.
 
 ## Features
 
@@ -43,6 +43,14 @@ The following attributes may be added in the markup to guide the moving of focus
 - `data-focus-prevent-scroll`: Prevents scrolling when the element receives focus.
 
 Setting `window.FOCUS_SHIFT_DEBUG = true` lets the library log processing steps to the browser's console.
+
+### CSS Options
+
+Some of focus-shift's behavior may be controlled using CSS, because it propagates nicely through the DOM tree, while allowing for overrides on individual elements or entire subtrees.
+
+- `--focus-interaction-behavior` determines behavior when arrow keys are pressed within input and textarea elements.
+  - `normal`: The default behavior of the browser will be preserved as much as possible. May come at the cost of input elements blocking spatial navigation.
+  - `opaque`: Input elements will be treated like other elements and focus will be shifted in the same way. Suitable for limited input devices (e.g. on-screen keyboards) and avoids ambiguities in interpreting arrow keys.
 
 ## Principles and Scope
 

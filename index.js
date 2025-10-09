@@ -592,60 +592,81 @@ function hasModifiers(e) {
 function isInputInteraction(direction, event) {
   const eventTarget = document.activeElement
 
-  if (
-    eventTarget instanceof HTMLInputElement ||
-    eventTarget instanceof HTMLTextAreaElement
-  ) {
-    const targetType = eventTarget.getAttribute("type")
-    const isTextualInput = [
-      "email",
-      "password",
-      "text",
-      "search",
-      "tel",
-      "url",
-      null
-    ].includes(targetType)
-    const isSpinnable =
-      targetType != null &&
-      ["date", "month", "number", "time", "week"].includes(targetType)
+  if (eventTarget == null || !hasInnerLife(eventTarget)) {
+    return false
+  }
 
-    if (isTextualInput || isSpinnable || eventTarget.nodeName === "TEXTAREA") {
-      // If there is a selection, assume user action is an input interaction
-      if (eventTarget.selectionStart !== eventTarget.selectionEnd) {
-        return true
-        // If there is only the cursor, check if it is natural to leave the element in given direction
-      } else {
-        const cursorPosition = eventTarget.selectionStart
-        const isVerticalMove = direction === "up" || direction === "down"
+  const targetType = eventTarget.getAttribute("type")
+  const isTextualInput = [
+    "email",
+    "password",
+    "text",
+    "search",
+    "tel",
+    "url",
+    null
+  ].includes(targetType)
+  const isSpinnable =
+    targetType != null &&
+    ["date", "month", "number", "time", "week"].includes(targetType)
 
-        if (eventTarget.value.length === 0) {
-          // If field is empty, leave in any direction
-          return false
-        } else if (cursorPosition == null) {
-          // If cursor position was not given, we always exit unless we see a "spinning" input
-          return isSpinnable && isVerticalMove
-        } else if (cursorPosition === 0) {
-          // Cursor at beginning
-          return direction === "right" || (isSpinnable && isVerticalMove)
-        } else if (cursorPosition === eventTarget.value.length) {
-          // Cursor at end
-          return direction === "left" || (isSpinnable && isVerticalMove)
-        } else {
-          // Cursor in middle
-          return (
-            direction === "left" ||
-            direction === "right" ||
-            (isSpinnable && isVerticalMove)
-          )
-        }
-      }
+  if (isTextualInput || isSpinnable || eventTarget.nodeName === "TEXTAREA") {
+    // If there is a selection, assume user action is an input interaction
+    if (eventTarget.selectionStart !== eventTarget.selectionEnd) {
+      return true
+      // If there is only the cursor, check if it is natural to leave the element in given direction
     } else {
-      return false
+      const cursorPosition = eventTarget.selectionStart
+      const isVerticalMove = direction === "up" || direction === "down"
+
+      if (eventTarget.value.length === 0) {
+        // If field is empty, leave in any direction
+        return false
+      } else if (cursorPosition == null) {
+        // If cursor position was not given, we always exit unless we see a "spinning" input
+        return isSpinnable && isVerticalMove
+      } else if (cursorPosition === 0) {
+        // Cursor at beginning
+        return direction === "right" || (isSpinnable && isVerticalMove)
+      } else if (cursorPosition === eventTarget.value.length) {
+        // Cursor at end
+        return direction === "left" || (isSpinnable && isVerticalMove)
+      } else {
+        // Cursor in middle
+        return (
+          direction === "left" ||
+          direction === "right" ||
+          (isSpinnable && isVerticalMove)
+        )
+      }
     }
   } else {
     return false
   }
+}
+
+/**
+ * Check whether an element may have inner life.
+ *
+ * Most focusable elements do not have internal interactions to be controlled
+ * with arrow key inputs. Input and textaera elements however may respond to
+ * arrow key presses directly, moving the cursor or manipulating their values.
+ *
+ * Elements can be made opaque explicitly by setting the
+ * `--focus-interaction-behavior` CSS variable to `opaque`.
+ *
+ * @param {Element} elem
+ * @returns {elem is HTMLInputElement | HTMLTextAreaElement }
+ */
+function hasInnerLife(elem) {
+  if (elem instanceof HTMLInputElement || elem instanceof HTMLTextAreaElement) {
+    const mode = getComputedStyle(elem)
+      .getPropertyValue("--focus-interaction-behavior")
+      .trim()
+    return mode !== "opaque"
+  }
+
+  return false
 }
 
 /**
