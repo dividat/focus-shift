@@ -44,6 +44,14 @@ The following attributes may be added in the markup to guide the moving of focus
 
 Setting `window.FOCUS_SHIFT_DEBUG = true` lets the library log processing steps to the browser's console.
 
+### CSS Options
+
+Some of focus-shift's behaviour may be controlled using CSS, because it propagates nicely through the DOM tree, while allowing for overrides on individual elements or entire subtrees.
+
+- `--focus-input-behavior` will be referred to to determine what to do when arrow keys are pressed within input elements.
+  - `normal`: The default behaviour of the browser will be preserved as much as possible.
+  - `opaque`: Input elements will be treated like other elements and focus will be shifted in the same way.
+
 ## Principles and Scope
 
 - **It doesn't just work.** It would be nice if focus could automatically move to the intuitive element in each case, but this seems to require a sophisticated model of visual weight and Gestalt principles. This is out of scope for a simple library like this.

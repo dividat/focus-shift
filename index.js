@@ -637,6 +637,10 @@ function hasModifiers(e) {
 function isInputInteraction(direction, event) {
   const eventTarget = document.activeElement
 
+  if (eventTarget == null || isElementOpaque(eventTarget)) {
+    return false
+  }
+
   if (
     eventTarget instanceof HTMLInputElement ||
     eventTarget instanceof HTMLTextAreaElement
@@ -691,6 +695,23 @@ function isInputInteraction(direction, event) {
   } else {
     return false
   }
+}
+
+/**
+ * Check whether an element is set to opaque behavior.
+ *
+ * When we treat an element as opaque we mean that we don't care about its internal capabilities.
+ * It may be able to move a cursor left or right, count up or down in correspondence to arrow
+ * up or down. We don't care. We shift focus.
+ *
+ * @param {Element} elem
+ * @returns {boolean}
+ */
+function isElementOpaque(elem) {
+  const mode = getComputedStyle(elem)
+    .getPropertyValue("--focus-input-behavior")
+    .trim()
+  return mode === "opaque"
 }
 
 /**
