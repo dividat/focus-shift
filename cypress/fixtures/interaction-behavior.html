@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="nav-group" id="normal-inputs">
+      <h2>Normal behavior</h2>
+      <p>
+        <label>Text <input type="text" value="Text" /></label>
+        <label>Number <input type="number" value="1" /></label>
+        <label>Email <input type="email" value="email@example" /></label>
+        <label>URL <input type="url" value="https://example" /></label>
+      </p>
+      <p>
+        <textarea>Text</textarea>
+        <button>Focusable</button>
+      </p>
+    </div>
+
+    <div class="nav-group" style="--focus-interaction-behavior: opaque" id="opaque-inputs">
+      <h2>Opaque behavior</h2>
+      <p>
+        <label>Text <input type="text" value="Text" /></label>
+        <label>Number <input type="number" value="1" /></label>
+        <label>Email <input type="email" value="email@example" /></label>
+        <label>URL <input type="url" value="https://example" /></label>
+      </p>
+      <p>
+        <textarea>Text</textarea>
+        <button>Focusable</button>
+      </p>
+    </div>
+
+    <div class="nav-group" style="--focus-interaction-behavior: opaque">
+      <h2>Opaque behavior parent</h2>
+      <label>Number <input type="number" value="1" /></label>
+      <label style="--focus-interaction-behavior: normal"
+        >Normal behavior number <input type="number" value="1" id="renormalized-input"
+      /></label>
+    </div>
+
+    <script src="../../index.js"></script>
+  </body>
+</html>
