@@ -283,6 +283,51 @@ function applyFocus(direction, origin, target) {
   } else if ("focus" in target && typeof target.focus === "function") {
     const preventScroll = target.hasAttribute("data-focus-prevent-scroll")
     target.focus({ preventScroll: preventScroll })
+
+    if (!hasInnerLife(target)) {
+      ensureTrailingCursor(target)
+    }
+  }
+}
+
+/**
+ * Move cursor to end of text in input and textarea elements.
+ *
+ * No-op on non-input elements.
+ *
+ * @param {Element} target
+ * @returns {void}
+ */
+function ensureTrailingCursor(target) {
+  if (target instanceof HTMLInputElement) {
+    const len = target.value.length
+
+    try {
+      // This works around browsers not allowing direct selection manipulation
+      // for some input types, even though they do offer a cursor inside the
+      // field. We temporarily change the type to `text`, move the cursor, then
+      // restore the original type.
+      // https://html.spec.whatwg.org/multipage/input.html#input-type-attr-summary
+      // https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/setSelectionRange#exceptions
+      let originalType
+      if (!["password", "search", "tel", "text", "url"].includes(target.type)) {
+        originalType = target.type
+        target.type = "text"
+      }
+
+      target.setSelectionRange(len, len)
+
+      if (originalType != null) {
+        target.type = originalType
+      }
+    } catch (e) {
+      // Guard against exceptions when trying to set selection range on
+      // unsupported input types, which may throw in some browsers.
+      logging.warn("Could not set selection range on input element", target)
+    }
+  } else if (target instanceof HTMLTextAreaElement) {
+    const len = target.value.length
+    target.setSelectionRange(len, len)
   }
 }
 
