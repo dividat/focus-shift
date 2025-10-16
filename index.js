@@ -641,21 +641,19 @@ function isInputInteraction(direction, event) {
     return false
   }
 
+  const isTextarea = eventTarget.nodeName === "TEXTAREA"
+  const isInput = eventTarget.nodeName === "INPUT"
   const targetType = eventTarget.getAttribute("type")
-  const isTextualInput = [
-    "email",
-    "password",
-    "text",
-    "search",
-    "tel",
-    "url",
-    null
-  ].includes(targetType)
-  const isSpinnable =
+  const isTextualInput =
+    isInput &&
+    ["email", "password", "text", "search", "tel", "url", null].includes(
+      targetType
+    )
+  const isSpinnableInput =
     targetType != null &&
     ["date", "month", "number", "time", "week"].includes(targetType)
 
-  if (isTextualInput || isSpinnable || eventTarget.nodeName === "TEXTAREA") {
+  if (isTextualInput || isSpinnableInput || isTextarea) {
     // If there is a selection, assume user action is an input interaction
     if (eventTarget.selectionStart !== eventTarget.selectionEnd) {
       return true
@@ -669,19 +667,27 @@ function isInputInteraction(direction, event) {
         return false
       } else if (cursorPosition == null) {
         // If cursor position was not given, we always exit unless we see a "spinning" input
-        return isSpinnable && isVerticalMove
+        return isSpinnableInput && isVerticalMove
       } else if (cursorPosition === 0) {
         // Cursor at beginning
-        return direction === "right" || (isSpinnable && isVerticalMove)
+        return (
+          direction === "right" ||
+          (direction === "down" && isTextarea) ||
+          (isSpinnableInput && isVerticalMove)
+        )
       } else if (cursorPosition === eventTarget.value.length) {
         // Cursor at end
-        return direction === "left" || (isSpinnable && isVerticalMove)
+        return (
+          direction === "left" ||
+          (direction === "up" && isTextarea) ||
+          (isSpinnableInput && isVerticalMove)
+        )
       } else {
         // Cursor in middle
         return (
           direction === "left" ||
           direction === "right" ||
-          (isSpinnable && isVerticalMove)
+          (isVerticalMove && (isTextarea || isSpinnableInput))
         )
       }
     }
