@@ -627,7 +627,7 @@ function hasModifiers(e) {
  * Adapted from the Spatial Navigation Polyfill.
  *
  * Original Copyright (c) 2018-2019 LG Electronics Inc.
- * Source: https://github.com/WICG/spatial-navigation/polyfill
+ * Source: https://github.com/WICG/spatial-navigation/tree/main/polyfill
  * Licensed under the MIT license (MIT)
  *
  * @param {Direction} direction - The direction read from the keydown event
