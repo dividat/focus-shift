@@ -328,6 +328,51 @@ function applyFocus(direction, origin, target) {
   } else if ("focus" in target && typeof target.focus === "function") {
     const preventScroll = target.hasAttribute("data-focus-prevent-scroll")
     target.focus({ preventScroll: preventScroll })
+
+    if (!hasInnerLife(target)) {
+      ensureTrailingCursor(target)
+    }
+  }
+}
+
+/**
+ * Move cursor to end of text in input and textarea elements.
+ *
+ * No-op on non-input elements.
+ *
+ * @param {Element} target
+ * @returns {void}
+ */
+function ensureTrailingCursor(target) {
+  if (target instanceof HTMLInputElement) {
+    const len = target.value.length
+
+    try {
+      // This works around browsers not allowing direct selection manipulation
+      // for some input types, even though they do offer a cursor inside the
+      // field. We temporarily change the type to `text`, move the cursor, then
+      // restore the original type.
+      // https://html.spec.whatwg.org/multipage/input.html#input-type-attr-summary
+      // https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/setSelectionRange#exceptions
+      let originalType
+      if (!["password", "search", "tel", "text", "url"].includes(target.type)) {
+        originalType = target.type
+        target.type = "text"
+      }
+
+      target.setSelectionRange(len, len)
+
+      if (originalType != null) {
+        target.type = originalType
+      }
+    } catch (e) {
+      // Guard against exceptions when trying to set selection range on
+      // unsupported input types, which may throw in some browsers.
+      logging.warn("Could not set selection range on input element", target)
+    }
+  } else if (target instanceof HTMLTextAreaElement) {
+    const len = target.value.length
+    target.setSelectionRange(len, len)
   }
 }
 
@@ -627,7 +672,7 @@ function hasModifiers(e) {
  * Adapted from the Spatial Navigation Polyfill.
  *
  * Original Copyright (c) 2018-2019 LG Electronics Inc.
- * Source: https://github.com/WICG/spatial-navigation/polyfill
+ * Source: https://github.com/WICG/spatial-navigation/tree/main/polyfill
  * Licensed under the MIT license (MIT)
  *
  * @param {Direction} direction - The direction read from the keydown event
@@ -637,60 +682,87 @@ function hasModifiers(e) {
 function isInputInteraction(direction, event) {
   const eventTarget = document.activeElement
 
-  if (
-    eventTarget instanceof HTMLInputElement ||
-    eventTarget instanceof HTMLTextAreaElement
-  ) {
-    const targetType = eventTarget.getAttribute("type")
-    const isTextualInput = [
-      "email",
-      "password",
-      "text",
-      "search",
-      "tel",
-      "url",
-      null
-    ].includes(targetType)
-    const isSpinnable =
-      targetType != null &&
-      ["date", "month", "number", "time", "week"].includes(targetType)
+  if (eventTarget == null || !hasInnerLife(eventTarget)) {
+    return false
+  }
 
-    if (isTextualInput || isSpinnable || eventTarget.nodeName === "TEXTAREA") {
-      // If there is a selection, assume user action is an input interaction
-      if (eventTarget.selectionStart !== eventTarget.selectionEnd) {
-        return true
-        // If there is only the cursor, check if it is natural to leave the element in given direction
-      } else {
-        const cursorPosition = eventTarget.selectionStart
-        const isVerticalMove = direction === "up" || direction === "down"
+  const isTextarea = eventTarget.nodeName === "TEXTAREA"
+  const isInput = eventTarget.nodeName === "INPUT"
+  const targetType = eventTarget.getAttribute("type")
+  const isTextualInput =
+    isInput &&
+    ["email", "password", "text", "search", "tel", "url", null].includes(
+      targetType
+    )
+  const isSpinnableInput =
+    targetType != null &&
+    ["date", "month", "number", "time", "week"].includes(targetType)
 
-        if (eventTarget.value.length === 0) {
-          // If field is empty, leave in any direction
-          return false
-        } else if (cursorPosition == null) {
-          // If cursor position was not given, we always exit unless we see a "spinning" input
-          return isSpinnable && isVerticalMove
-        } else if (cursorPosition === 0) {
-          // Cursor at beginning
-          return direction === "right" || (isSpinnable && isVerticalMove)
-        } else if (cursorPosition === eventTarget.value.length) {
-          // Cursor at end
-          return direction === "left" || (isSpinnable && isVerticalMove)
-        } else {
-          // Cursor in middle
-          return (
-            direction === "left" ||
-            direction === "right" ||
-            (isSpinnable && isVerticalMove)
-          )
-        }
-      }
+  if (isTextualInput || isSpinnableInput || isTextarea) {
+    // If there is a selection, assume user action is an input interaction
+    if (eventTarget.selectionStart !== eventTarget.selectionEnd) {
+      return true
+      // If there is only the cursor, check if it is natural to leave the element in given direction
     } else {
-      return false
+      const cursorPosition = eventTarget.selectionStart
+      const isVerticalMove = direction === "up" || direction === "down"
+
+      if (eventTarget.value.length === 0) {
+        // If field is empty, leave in any direction
+        return false
+      } else if (cursorPosition == null) {
+        // If cursor position was not given, we always exit unless we see a "spinning" input
+        return isSpinnableInput && isVerticalMove
+      } else if (cursorPosition === 0) {
+        // Cursor at beginning
+        return (
+          direction === "right" ||
+          (direction === "down" && isTextarea) ||
+          (isSpinnableInput && isVerticalMove)
+        )
+      } else if (cursorPosition === eventTarget.value.length) {
+        // Cursor at end
+        return (
+          direction === "left" ||
+          (direction === "up" && isTextarea) ||
+          (isSpinnableInput && isVerticalMove)
+        )
+      } else {
+        // Cursor in middle
+        return (
+          direction === "left" ||
+          direction === "right" ||
+          (isVerticalMove && (isTextarea || isSpinnableInput))
+        )
+      }
     }
   } else {
     return false
   }
+}
+
+/**
+ * Check whether an element may have inner life.
+ *
+ * Most focusable elements do not have internal interactions to be controlled
+ * with arrow key inputs. Input and textaera elements however may respond to
+ * arrow key presses directly, moving the cursor or manipulating their values.
+ *
+ * Elements can be made opaque explicitly by setting the
+ * `--focus-interaction-behavior` CSS variable to `opaque`.
+ *
+ * @param {Element} elem
+ * @returns {elem is HTMLInputElement | HTMLTextAreaElement }
+ */
+function hasInnerLife(elem) {
+  if (elem instanceof HTMLInputElement || elem instanceof HTMLTextAreaElement) {
+    const mode = getComputedStyle(elem)
+      .getPropertyValue("--focus-interaction-behavior")
+      .trim()
+    return mode !== "opaque"
+  }
+
+  return false
 }
 
 /**

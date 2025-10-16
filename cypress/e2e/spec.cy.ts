@@ -252,6 +252,31 @@ describe("focus-shift spec", () => {
   )
 
   it(
+    "allows treating input elements as opaque",
+    testFor("./cypress/fixtures/interaction-behavior.html", { className: "" }, [
+      // Cypress does not seem to model cursors fully, which makes testing specifics of "normal"
+      // interaction behavior, i.e. moving the cursor within input text, brittle and difficult.
+      // We only verify a minimal expected difference between the modes: Whereas in normal mode
+      // arrow presses leave focus on the input in some cases, equivalent actions immediately
+      // shift focus in opaque mode.
+
+      // Input
+      { eventType: "focus", selector: "#normal-inputs [type=text]" },
+      { eventType: "keydown", selector: "#normal-inputs [type=text]", options: keyevent({ key: "ArrowRight" }) },
+      { eventType: "keydown", selector: "#normal-inputs [type=text]", options: keyevent({ key: "ArrowRight" }) },
+      { eventType: "focus", selector: "#opaque-inputs [type=text]" },
+      { eventType: "keydown", selector: "#opaque-inputs [type=number]", options: keyevent({ key: "ArrowRight" }) },
+      { eventType: "keydown", selector: "#opaque-inputs [type=email]", options: keyevent({ key: "ArrowRight" }) },
+      // Textarea
+      { eventType: "focus", selector: "#normal-inputs textarea" },
+      { eventType: "keydown", selector: "#normal-inputs textarea", options: keyevent({ key: "ArrowRight" }) },
+      { eventType: "keydown", selector: "#normal-inputs textarea", options: keyevent({ key: "ArrowRight" }) },
+      { eventType: "focus", selector: "#opaque-inputs textarea" },
+      { eventType: "keydown", selector: "#opaque-inputs button", options: keyevent({ key: "ArrowRight" }) }
+    ])
+  )
+
+  it(
     "allows canceling event handling",
     testFor("./cypress/fixtures/events.html", { className: "rows" }, [
       { eventType: "keydown", selector: "#button-1", options: keyevent({ key: "ArrowDown", repeat: false }) },
