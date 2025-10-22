@@ -364,6 +364,60 @@ describe("focus-shift spec", () => {
     ])
   )
 
+  it(
+    "emits event when navigation options exhausted",
+    testFor("./cypress/fixtures/exhausted-events.html", { className: "cols" }, [
+      {
+        eventType: "keydown",
+        selector: "#button-1",
+        options: keyevent({ key: "ArrowDown" }),
+        events: { "focus-shift:exhausted": 0 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-1",
+        options: keyevent({ key: "ArrowUp" }),
+        events: { "focus-shift:exhausted": 1 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-1",
+        options: keyevent({ key: "ArrowLeft" }),
+        events: { "focus-shift:exhausted": 1 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-2",
+        options: keyevent({ key: "ArrowRight" }),
+        events: { "focus-shift:exhausted": 0 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-2",
+        options: keyevent({ key: "ArrowRight" }),
+        events: { "focus-shift:exhausted": 1 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-3",
+        options: keyevent({ key: "ArrowDown" }),
+        events: { "focus-shift:exhausted": 0 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-5",
+        options: keyevent({ key: "ArrowDown" }),
+        events: { "focus-shift:exhausted": 0 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-5",
+        options: keyevent({ key: "ArrowDown" }),
+        events: { "focus-shift:exhausted": 1 }
+      }
+    ])
+  )
+
   it("allows preventing scroll", function () {
     cy.visit("./cypress/fixtures/prevent-scroll.html")
     const getScrollLeft = () => cy.document().then((doc) => doc.scrollingElement.scrollLeft)
