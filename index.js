@@ -515,7 +515,7 @@ function getGroupType(element) {
     case null:
       return "linear"
     default:
-      console.warn(`Invalid focus group type: ${str}`)
+      logging.warn(`Invalid focus group type: ${str}`)
       return null
   }
 }
