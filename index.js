@@ -29,22 +29,18 @@ function handleKeyDown(event) {
     return
   } else {
     const eventTarget = document.activeElement || document.body
-    const shiftFocusEvent = new CustomEvent("focus-shift:initiate", {
+    const hasGreenLight = dispatchFocusShiftEvent("initiate", eventTarget, {
       detail: { keyboardEvent: event },
       cancelable: true,
       bubbles: true
     })
-    eventTarget.dispatchEvent(shiftFocusEvent)
 
     logging.group(`focus-shift: ${event.key}`)
-    if (shiftFocusEvent.defaultPrevented) {
-      logging.debug(
-        "Handling canceled via 'focus-shift:initiate' event",
-        shiftFocusEvent
-      )
-    } else {
+    if (hasGreenLight) {
       event.preventDefault()
       handleUserDirection(KEY_TO_DIRECTION[event.key])
+    } else {
+      logging.debug("Handling canceled via 'focus-shift:initiate' event")
     }
     logging.groupEnd()
   }
@@ -1028,6 +1024,37 @@ function hasOverlap(start1, end1, start2, end2) {
 //
 // Generic utilities
 //
+
+/**
+ * Creates a CustomEvent prefixed with 'focus-shift:'.
+ *
+ * The resulting event type will be `focus-shift:${eventName}`.
+ *
+ * @template T
+ * @param {string} eventName
+ * @param {CustomEventInit<T>} [eventOptions]
+ * @returns {CustomEvent<T>} - A new CustomEvent instance
+ */
+function makeFocusShiftEvent(eventName, eventOptions) {
+  return new CustomEvent(`focus-shift:${eventName}`, eventOptions)
+}
+
+/**
+ * Creates and dispatches a custom library event on the specified target.
+ *
+ * This is a convenience wrapper around `makeFocusShiftEvent` and `eventTarget.dispatchEvent`.
+ *
+ * @template T
+ * @param {string} eventName
+ * @param {EventTarget} eventTarget
+ * @param {CustomEventInit<T>} [eventOptions]
+ * @returns {boolean} - True if the event was dispatched and not cancelled
+ */
+function dispatchFocusShiftEvent(eventName, eventTarget, eventOptions) {
+  const event = makeFocusShiftEvent(eventName, eventOptions)
+  logging.debug("Dispatching focus-shift event", event)
+  return eventTarget.dispatchEvent(event)
+}
 
 /**
  * Returns the element in `array` for which `toNumeric` is minimal.
