@@ -12,7 +12,21 @@ describe("focus-shift spec", () => {
     }
   }
 
-  function testFor(testPage, opts, sequence) {
+  type Step = {
+    // "click" and "focus" perform actions, other strings are triggered as global events
+    eventType: "click" | "focus" | string
+    // element to act on for "click" and "focus", otherwise the element to expect to be focused at end of step
+    selector?: string
+    // event options to pass to cy.trigger
+    options?: Object
+    // specifies exact number of events expected for each event type as key
+    events?: { [eventType: string]: number }
+  }
+
+  /**
+   * Make a test for a given test page from declarative sequence of steps.
+   */
+  function testFor(testPage: string, opts: { className?: string }, sequence: Array<Step>) {
     return function () {
       cy.visit(testPage)
 
@@ -21,26 +35,26 @@ describe("focus-shift spec", () => {
         $body[0].focus()
       })
 
-      for (let pair of sequence) {
-        setupEventExpectations(pair.events).then(() => {
-          switch (pair.eventType) {
+      for (let step of sequence) {
+        setupEventExpectations(step.events).then(() => {
+          switch (step.eventType) {
             case "click":
-              cy.get(pair.selector).click()
+              cy.get(step.selector).click()
               break
             case "focus":
-              cy.get(pair.selector).then(($elem) => {
+              cy.get(step.selector).then(($elem) => {
                 $elem[0].focus()
               })
               break
             default:
               cy.get("body")
-                .trigger(pair.eventType, pair.options)
+                .trigger(step.eventType, step.options)
                 .then(($body) => {
                   cy.wait(50)
 
                   cy.document().then((doc) => {
-                    if (pair.selector) {
-                      expect(doc.querySelector(pair.selector)).to.equal(doc.activeElement)
+                    if (step.selector) {
+                      expect(doc.querySelector(step.selector)).to.equal(doc.activeElement)
                     } else {
                       expect(doc.activeElement).to.equal(doc.body)
                     }
@@ -48,7 +62,7 @@ describe("focus-shift spec", () => {
                 })
           }
         })
-        assertAndCleanUpEventExpectations(pair.events)
+        assertAndCleanUpEventExpectations(step.events)
       }
     }
   }
