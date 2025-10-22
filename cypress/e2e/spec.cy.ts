@@ -113,7 +113,7 @@ describe("focus-shift spec", () => {
 
           const assertionMessage = `Expected event '${eventType}' ${expectedCount} time(s). Actual count: ${actualCount}`
 
-          expect(actualCount, assertionMessage).to.be(expectedCount)
+          expect(actualCount, assertionMessage).to.equal(expectedCount)
 
           doc.removeEventListener(eventType, handler)
           delete window.__eventTracker[eventType]
@@ -352,7 +352,12 @@ describe("focus-shift spec", () => {
   it(
     "allows canceling event handling",
     testFor("./cypress/fixtures/events.html", { className: "rows" }, [
-      { eventType: "keydown", selector: "#button-1", options: keyevent({ key: "ArrowDown", repeat: false }) },
+      {
+        eventType: "keydown",
+        selector: "#button-1",
+        options: keyevent({ key: "ArrowDown", repeat: false }),
+        events: { "focus-shift:initiate": 1 }
+      },
       { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown", repeat: false }) },
       { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown", repeat: true }) },
       { eventType: "keydown", selector: "#button-3", options: keyevent({ key: "ArrowDown", repeat: false }) }
