@@ -22,32 +22,91 @@ describe("focus-shift spec", () => {
       })
 
       for (let pair of sequence) {
-        switch (pair.eventType) {
-          case "click":
-            cy.get(pair.selector).click()
-            break
-          case "focus":
-            cy.get(pair.selector).then(($elem) => {
-              $elem[0].focus()
-            })
-            break
-          default:
-            cy.get("body")
-              .trigger(pair.eventType, pair.options)
-              .then(($body) => {
-                cy.wait(50)
-
-                cy.document().then((doc) => {
-                  if (pair.selector) {
-                    expect(doc.querySelector(pair.selector)).to.equal(doc.activeElement)
-                  } else {
-                    expect(doc.activeElement).to.equal(doc.body)
-                  }
-                })
+        setupEventExpectations(pair.events).then(() => {
+          switch (pair.eventType) {
+            case "click":
+              cy.get(pair.selector).click()
+              break
+            case "focus":
+              cy.get(pair.selector).then(($elem) => {
+                $elem[0].focus()
               })
-        }
+              break
+            default:
+              cy.get("body")
+                .trigger(pair.eventType, pair.options)
+                .then(($body) => {
+                  cy.wait(50)
+
+                  cy.document().then((doc) => {
+                    if (pair.selector) {
+                      expect(doc.querySelector(pair.selector)).to.equal(doc.activeElement)
+                    } else {
+                      expect(doc.activeElement).to.equal(doc.body)
+                    }
+                  })
+                })
+          }
+        })
+        assertAndCleanUpEventExpectations(pair.events)
       }
     }
+  }
+
+  function setupEventExpectations(expectations) {
+    const eventTypes = typeof expectations == "object" ? Object.keys(expectations) : []
+
+    if (eventTypes.length === 0) {
+      return cy.wrap(null)
+    }
+
+    window.__eventTracker = window.__eventTracker || {}
+
+    return cy.document().then((doc) => {
+      for (const eventType of eventTypes) {
+        if (!window.__eventTracker[eventType]) {
+          const eventCounts = { count: 0 }
+
+          const handler = () => {
+            eventCounts.count++
+          }
+
+          doc.addEventListener(eventType, handler)
+          window.__eventTracker[eventType] = { handler, eventCounts, type: eventType }
+          cy.log(`Installed event listener for: ${eventType}`)
+        } else {
+          // If already installed, we simply reuse the existing tracker for counting.
+          // This is safe because assertions & cleanup happen per step.
+          cy.log(`Reusing existing event listener for: ${eventType}`)
+        }
+      }
+    })
+  }
+
+  function assertAndCleanUpEventExpectations(expectations) {
+    const eventTypes = typeof expectations == "object" ? Object.keys(expectations) : []
+
+    if (eventTypes.length === 0 || !window.__eventTracker) {
+      return cy.wrap(null)
+    }
+
+    return cy.document().then((doc) => {
+      for (const eventType of eventTypes) {
+        if (window.__eventTracker[eventType]) {
+          const { handler, eventCounts } = window.__eventTracker[eventType]
+          const actualCount = eventCounts.count
+          const expectedCount = expectations[eventType]
+
+          const assertionMessage = `Expected event '${eventType}' ${expectedCount} time(s). Actual count: ${actualCount}`
+
+          expect(actualCount, assertionMessage).to.be(expectedCount)
+
+          doc.removeEventListener(eventType, handler)
+          delete window.__eventTracker[eventType]
+          cy.log(`Removed event listener and asserted count ${actualCount} for: ${eventType}`)
+        }
+      }
+    })
   }
 
   it(
