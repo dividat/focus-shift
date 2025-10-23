@@ -9,7 +9,7 @@ focus-shift is a lightweight, zero-dependency JavaScript library designed for ke
 - Mark subtrees of the DOM that should trap focus
 - Mark subtrees of the DOM that should be skipped
 - Mark elements to not trigger scrolling when receiving focus
-- Dispatches events which allow canceling individual focus shifts
+- Dispatches events which allow responding to or controlling focus shifts
 
 ## Usage
 
@@ -51,6 +51,13 @@ Some of focus-shift's behavior may be controlled using CSS, because it propagate
 - `--focus-interaction-behavior` determines behavior when arrow keys are pressed within input and textarea elements.
   - `normal`: The default behavior of the browser will be preserved as much as possible. May come at the cost of input elements blocking spatial navigation.
   - `opaque`: Input elements will be treated like other elements and focus will be shifted in the same way. Suitable for limited input devices (e.g. on-screen keyboards) and avoids ambiguities in interpreting arrow keys.
+
+### Events
+
+Some events may bubble up from the active element:
+
+- `focus-shift:initiate`: Dispatched before interpreting a spatial navigation gesture from the user. Prevent default to stop focus-shift from initiating spatial navigation. The event's detail contains the triggering `keyboardEvent`.
+- `focus-shift:exhausted`: Dispatched when focus-shift attempted to handle a user gesture but found no focus candidates along the requested direction. The event's detail contains the triggering `keyboardEvent` and requested `direction`.
 
 ## Principles and Scope
 

@@ -29,22 +29,26 @@ function handleKeyDown(event) {
     return
   } else {
     const eventTarget = document.activeElement || document.body
-    const shiftFocusEvent = new CustomEvent("focus-shift:initiate", {
+    const hasGreenLight = dispatchFocusShiftEvent("initiate", eventTarget, {
       detail: { keyboardEvent: event },
       cancelable: true,
       bubbles: true
     })
-    eventTarget.dispatchEvent(shiftFocusEvent)
 
     logging.group(`focus-shift: ${event.key}`)
-    if (shiftFocusEvent.defaultPrevented) {
-      logging.debug(
-        "Handling canceled via 'focus-shift:initiate' event",
-        shiftFocusEvent
-      )
-    } else {
+    if (hasGreenLight) {
       event.preventDefault()
-      handleUserDirection(KEY_TO_DIRECTION[event.key])
+      const wasHandled = handleUserDirection(KEY_TO_DIRECTION[event.key])
+
+      if (!wasHandled) {
+        dispatchFocusShiftEvent("exhausted", eventTarget, {
+          detail: { direction: direction, keyboardEvent: event },
+          cancelable: false,
+          bubbles: true
+        })
+      }
+    } else {
+      logging.debug("Handling canceled via 'focus-shift:initiate' event")
     }
     logging.groupEnd()
   }
@@ -54,21 +58,26 @@ function handleKeyDown(event) {
  * Handle a user's request for focus shift.
  *
  * @param {Direction} direction
- * @returns {void}
+ * @returns {boolean} - True if a spatial navigation action was performed
  */
 function handleUserDirection(direction) {
   const container = getBlockingElement()
   const activeElement = getActiveElement(container)
 
   if (activeElement == null) {
-    focusInitial(direction, container)
-    return
+    return focusInitial(direction, container)
   }
 
   const candidates = getFocusCandidates(direction, activeElement, container)
   if (candidates.length > 0) {
-    performMove(direction, activeElement.getBoundingClientRect(), candidates)
+    return performMove(
+      direction,
+      activeElement.getBoundingClientRect(),
+      candidates
+    )
   }
+
+  return false
 }
 
 /**
@@ -81,7 +90,7 @@ function handleUserDirection(direction) {
  *
  * @param {Direction} direction
  * @param {Element} container
- * @returns {void}
+ * @returns {boolean} - True if there was an element to focus
  */
 function focusInitial(direction, container) {
   // 1. tabindex
@@ -91,12 +100,11 @@ function focusInitial(direction, container) {
     .filter((elem) => elem.tabIndex > 0)
   const markedElement = getMinimumBy(tabindexed, (elem) => elem.tabIndex)
   if (markedElement != null && isBeingRendered(markedElement)) {
-    applyFocus(direction, makeVirtualOrigin(direction), markedElement)
-    return
+    return applyFocus(direction, makeVirtualOrigin(direction), markedElement)
   }
 
   // 2. 'linear' group
-  focusLinear(direction, makeVirtualOrigin(direction), container)
+  return focusLinear(direction, makeVirtualOrigin(direction), container)
 }
 
 /**
@@ -279,7 +287,7 @@ function getFocusCandidates(direction, activeElement, container) {
  * @param {Direction} direction
  * @param {DOMRect} originRect - The bounding box of the element that has focus at the time the move is initiated
  * @param {Array<AnnotatedElement>} candidates - The candidates from which to pick
- * @returns {void}
+ * @returns {boolean} - True if a move has been performed
  */
 function performMove(direction, originRect, candidates) {
   logging.debug("performMove", direction, originRect, candidates)
@@ -298,7 +306,9 @@ function performMove(direction, originRect, candidates) {
     euclidean(originPoint, candidate.point)
   )
   if (bestCandidate != null) {
-    applyFocus(direction, originRect, bestCandidate.element)
+    return applyFocus(direction, originRect, bestCandidate.element)
+  } else {
+    return false
   }
 }
 
@@ -308,7 +318,7 @@ function performMove(direction, originRect, candidates) {
  * @param {Direction} direction
  * @param {DOMRect} origin
  * @param {Element} target
- * @returns {void}
+ * @returns {boolean} - True if focus could be applied
  */
 function applyFocus(direction, origin, target) {
   logging.debug("applyFocus", direction, target)
@@ -324,7 +334,7 @@ function applyFocus(direction, origin, target) {
   }
 
   if (isGroup(target)) {
-    dispatchGroupFocus(direction, origin, target)
+    return dispatchGroupFocus(direction, origin, target)
   } else if ("focus" in target && typeof target.focus === "function") {
     const preventScroll = target.hasAttribute("data-focus-prevent-scroll")
     target.focus({ preventScroll: preventScroll })
@@ -332,6 +342,10 @@ function applyFocus(direction, origin, target) {
     if (!hasInnerLife(target)) {
       ensureTrailingCursor(target)
     }
+
+    return true
+  } else {
+    return false
   }
 }
 
@@ -515,7 +529,7 @@ function getGroupType(element) {
     case null:
       return "linear"
     default:
-      console.warn(`Invalid focus group type: ${str}`)
+      logging.warn(`Invalid focus group type: ${str}`)
       return null
   }
 }
@@ -526,26 +540,23 @@ function getGroupType(element) {
  * @param {Direction} direction
  * @param {DOMRect} origin
  * @param {Element} group
- * @returns {void}
+ * @returns {boolean} - True if focus could be dispatched
  */
 function dispatchGroupFocus(direction, origin, group) {
   const strategy = getGroupType(group)
   switch (strategy) {
     case "first":
-      focusFirstElement(direction, origin, group)
-      break
+      return focusFirstElement(direction, origin, group)
     case "last":
-      focusLastElement(direction, origin, group)
-      break
+      return focusLastElement(direction, origin, group)
     case "active":
-      focusActiveElement(direction, origin, group)
-      break
+      return focusActiveElement(direction, origin, group)
     case "linear":
-      focusLinear(direction, origin, group)
-      break
+      return focusLinear(direction, origin, group)
     case "memorize":
-      focusMemorized(direction, origin, group)
-      break
+      return focusMemorized(direction, origin, group)
+    default:
+      return false
   }
 }
 
@@ -555,12 +566,14 @@ function dispatchGroupFocus(direction, origin, group) {
  * @param {Direction} direction
  * @param {DOMRect} origin
  * @param {Element} group
+ * @returns {boolean} - True if focus could be applied
  */
 function focusFirstElement(direction, origin, group) {
   const focusables = getFocusableElements(group)
   if (focusables.length > 0) {
-    applyFocus(direction, origin, focusables[0])
+    return applyFocus(direction, origin, focusables[0])
   }
+  return false
 }
 
 /**
@@ -569,12 +582,14 @@ function focusFirstElement(direction, origin, group) {
  * @param {Direction} direction
  * @param {DOMRect} origin
  * @param {Element} group
+ * @returns {boolean} - True if focus could be applied
  */
 function focusLastElement(direction, origin, group) {
   const focusables = getFocusableElements(group)
   if (focusables.length > 0) {
-    applyFocus(direction, origin, focusables[focusables.length - 1])
+    return applyFocus(direction, origin, focusables[focusables.length - 1])
   }
+  return false
 }
 
 /**
@@ -583,15 +598,16 @@ function focusLastElement(direction, origin, group) {
  * @param {Direction} direction
  * @param {DOMRect} origin
  * @param {Element} group
+ * @returns {boolean} - True if focus could be applied
  */
 function focusActiveElement(direction, origin, group) {
   const activeElement = getFocusableElements(group).find((elem) =>
     elem.hasAttribute("data-focus-active")
   )
   if (activeElement) {
-    applyFocus(direction, origin, activeElement)
+    return applyFocus(direction, origin, activeElement)
   } else {
-    focusFirstElement(direction, origin, group)
+    return focusFirstElement(direction, origin, group)
   }
 }
 
@@ -601,6 +617,7 @@ function focusActiveElement(direction, origin, group) {
  * @param {Direction} direction
  * @param {DOMRect} origin
  * @param {Element} group
+ * @returns {boolean} - True if focus could be applied
  */
 function focusLinear(direction, origin, group) {
   const originPoint = makeOrigin(opposite(direction), origin)
@@ -611,8 +628,9 @@ function focusLinear(direction, origin, group) {
     euclidean(originPoint, candidate.point)
   )
   if (bestCandidate != null) {
-    applyFocus(direction, origin, bestCandidate.element)
+    return applyFocus(direction, origin, bestCandidate.element)
   }
+  return false
 }
 
 /**
@@ -623,12 +641,13 @@ function focusLinear(direction, origin, group) {
  * @param {Direction} direction
  * @param {DOMRect} origin
  * @param {Element} group
+ * @returns {boolean} - True if focus could be applied
  */
 function focusMemorized(direction, origin, group) {
   if (isMemorizing(group) && group.contains(group.lastFocused)) {
-    applyFocus(direction, origin, group.lastFocused)
+    return applyFocus(direction, origin, group.lastFocused)
   } else {
-    focusLinear(direction, origin, group)
+    return focusLinear(direction, origin, group)
   }
 }
 
@@ -1028,6 +1047,37 @@ function hasOverlap(start1, end1, start2, end2) {
 //
 // Generic utilities
 //
+
+/**
+ * Creates a CustomEvent prefixed with 'focus-shift:'.
+ *
+ * The resulting event type will be `focus-shift:${eventName}`.
+ *
+ * @template T
+ * @param {string} eventName
+ * @param {CustomEventInit<T>} [eventOptions]
+ * @returns {CustomEvent<T>} - A new CustomEvent instance
+ */
+function makeFocusShiftEvent(eventName, eventOptions) {
+  return new CustomEvent(`focus-shift:${eventName}`, eventOptions)
+}
+
+/**
+ * Creates and dispatches a custom library event on the specified target.
+ *
+ * This is a convenience wrapper around `makeFocusShiftEvent` and `eventTarget.dispatchEvent`.
+ *
+ * @template T
+ * @param {string} eventName
+ * @param {EventTarget} eventTarget
+ * @param {CustomEventInit<T>} [eventOptions]
+ * @returns {boolean} - True if the event was dispatched and not cancelled
+ */
+function dispatchFocusShiftEvent(eventName, eventTarget, eventOptions) {
+  const event = makeFocusShiftEvent(eventName, eventOptions)
+  logging.debug("Dispatching focus-shift event", event)
+  return eventTarget.dispatchEvent(event)
+}
 
 /**
  * Returns the element in `array` for which `toNumeric` is minimal.

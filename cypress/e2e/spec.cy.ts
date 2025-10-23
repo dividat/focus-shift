@@ -12,7 +12,21 @@ describe("focus-shift spec", () => {
     }
   }
 
-  function testFor(testPage, opts, sequence) {
+  type Step = {
+    // "click" and "focus" perform actions, other strings are triggered as global events
+    eventType: "click" | "focus" | string
+    // element to act on for "click" and "focus", otherwise the element to expect to be focused at end of step
+    selector?: string
+    // event options to pass to cy.trigger
+    options?: Object
+    // specifies exact number of events expected for each event type as key
+    events?: { [eventType: string]: number }
+  }
+
+  /**
+   * Make a test for a given test page from declarative sequence of steps.
+   */
+  function testFor(testPage: string, opts: { className?: string }, sequence: Array<Step>) {
     return function () {
       cy.visit(testPage)
 
@@ -21,33 +35,92 @@ describe("focus-shift spec", () => {
         $body[0].focus()
       })
 
-      for (let pair of sequence) {
-        switch (pair.eventType) {
-          case "click":
-            cy.get(pair.selector).click()
-            break
-          case "focus":
-            cy.get(pair.selector).then(($elem) => {
-              $elem[0].focus()
-            })
-            break
-          default:
-            cy.get("body")
-              .trigger(pair.eventType, pair.options)
-              .then(($body) => {
-                cy.wait(50)
-
-                cy.document().then((doc) => {
-                  if (pair.selector) {
-                    expect(doc.querySelector(pair.selector)).to.equal(doc.activeElement)
-                  } else {
-                    expect(doc.activeElement).to.equal(doc.body)
-                  }
-                })
+      for (let step of sequence) {
+        setupEventExpectations(step.events).then(() => {
+          switch (step.eventType) {
+            case "click":
+              cy.get(step.selector).click()
+              break
+            case "focus":
+              cy.get(step.selector).then(($elem) => {
+                $elem[0].focus()
               })
-        }
+              break
+            default:
+              cy.get("body")
+                .trigger(step.eventType, step.options)
+                .then(($body) => {
+                  cy.wait(50)
+
+                  cy.document().then((doc) => {
+                    if (step.selector) {
+                      expect(doc.querySelector(step.selector)).to.equal(doc.activeElement)
+                    } else {
+                      expect(doc.activeElement).to.equal(doc.body)
+                    }
+                  })
+                })
+          }
+        })
+        assertAndCleanUpEventExpectations(step.events)
       }
     }
+  }
+
+  function setupEventExpectations(expectations) {
+    const eventTypes = typeof expectations == "object" ? Object.keys(expectations) : []
+
+    if (eventTypes.length === 0) {
+      return cy.wrap(null)
+    }
+
+    window.__eventTracker = window.__eventTracker || {}
+
+    return cy.document().then((doc) => {
+      for (const eventType of eventTypes) {
+        if (!window.__eventTracker[eventType]) {
+          const eventCounts = { count: 0 }
+
+          const handler = () => {
+            eventCounts.count++
+          }
+
+          doc.addEventListener(eventType, handler)
+          window.__eventTracker[eventType] = { handler, eventCounts, type: eventType }
+          cy.log(`Installed event listener for: ${eventType}`)
+        } else {
+          // If already installed, we simply reuse the existing tracker for counting.
+          // This is safe because assertions & cleanup happen per step.
+          cy.log(`Reusing existing event listener for: ${eventType}`)
+        }
+      }
+    })
+  }
+
+  function assertAndCleanUpEventExpectations(expectations) {
+    const eventTypes = typeof expectations == "object" ? Object.keys(expectations) : []
+
+    if (eventTypes.length === 0 || !window.__eventTracker) {
+      return cy.wrap(null)
+    }
+
+    return cy.document().then((doc) => {
+      for (const eventType of eventTypes) {
+        if (window.__eventTracker[eventType]) {
+          const { handler, eventCounts } = window.__eventTracker[eventType]
+          const actualCount = eventCounts.count
+          const expectedCount = expectations[eventType]
+
+          const assertionMessage = `Expected event '${eventType}' ${expectedCount} time(s). Actual count: ${actualCount}`
+
+          expect(actualCount, assertionMessage).to.equal(expectedCount)
+
+          doc.removeEventListener(eventType, handler)
+          delete window.__eventTracker[eventType]
+          cy.log(`Removed event listener and asserted count ${actualCount} for: ${eventType}`)
+        }
+      }
+    })
   }
 
   it(
@@ -279,15 +352,74 @@ describe("focus-shift spec", () => {
   it(
     "allows canceling event handling",
     testFor("./cypress/fixtures/events.html", { className: "rows" }, [
-      { eventType: "keydown", selector: "#button-1", options: keyevent({ key: "ArrowDown", repeat: false }) },
+      {
+        eventType: "keydown",
+        selector: "#button-1",
+        options: keyevent({ key: "ArrowDown", repeat: false }),
+        events: { "focus-shift:initiate": 1 }
+      },
       { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown", repeat: false }) },
       { eventType: "keydown", selector: "#button-2", options: keyevent({ key: "ArrowDown", repeat: true }) },
       { eventType: "keydown", selector: "#button-3", options: keyevent({ key: "ArrowDown", repeat: false }) }
     ])
   )
 
+  it(
+    "emits event when navigation options exhausted",
+    testFor("./cypress/fixtures/exhausted-events.html", { className: "cols" }, [
+      {
+        eventType: "keydown",
+        selector: "#button-1",
+        options: keyevent({ key: "ArrowDown" }),
+        events: { "focus-shift:exhausted": 0 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-1",
+        options: keyevent({ key: "ArrowUp" }),
+        events: { "focus-shift:exhausted": 1 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-1",
+        options: keyevent({ key: "ArrowLeft" }),
+        events: { "focus-shift:exhausted": 1 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-2",
+        options: keyevent({ key: "ArrowRight" }),
+        events: { "focus-shift:exhausted": 0 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-2",
+        options: keyevent({ key: "ArrowRight" }),
+        events: { "focus-shift:exhausted": 1 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-3",
+        options: keyevent({ key: "ArrowDown" }),
+        events: { "focus-shift:exhausted": 0 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-5",
+        options: keyevent({ key: "ArrowDown" }),
+        events: { "focus-shift:exhausted": 0 }
+      },
+      {
+        eventType: "keydown",
+        selector: "#button-5",
+        options: keyevent({ key: "ArrowDown" }),
+        events: { "focus-shift:exhausted": 1 }
+      }
+    ])
+  )
+
   it("allows preventing scroll", function () {
-    cy.visit("./cypress/fixtures/scroll.html")
+    cy.visit("./cypress/fixtures/prevent-scroll.html")
     const getScrollLeft = () => cy.document().then((doc) => doc.scrollingElement.scrollLeft)
     function testScroll(id, assert) {
       getScrollLeft().then((scrollLeftBefore) => {
