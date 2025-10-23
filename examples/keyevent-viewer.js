@@ -8,7 +8,7 @@ document.addEventListener("keydown", function (event) {
   // Create a new overlay
   const displayDiv = document.createElement("div")
   displayDiv.id = "key-display"
-  displayDiv.style.position = "absolute"
+  displayDiv.style.position = "fixed"
   displayDiv.style.bottom = "20px"
   displayDiv.style.right = "20px"
   displayDiv.style.padding = "10px"
