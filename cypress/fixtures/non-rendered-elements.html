@@ -10,6 +10,10 @@
       .displayNone {
         display: none;
       }
+      .contentVisibilityHidden {
+        display: inline-block;
+        content-visibility: hidden;
+      }
       .visibilityHidden {
         visibility: hidden;
       }
@@ -29,14 +33,47 @@
     </style>
   </head>
   <body>
-    <button id="first-button">First Button</button>
-    <button class="opacityZero">Transparent Button</button>
-    <button class="displayNone">Hidden Button</button>
-    <button class="visibilityHidden">Hidden Button</button>
-    <button class="visibilityCollapse">Hidden Button</button>
-    <span tabindex="1" class="zeroWidth">Hidden Element</span>
-    <span tabindex="1" class="zeroHeight">Hidden Element</span>
-    <button id="last-button">Last Button</button>
+    <div class="nav-group">
+      <button id="first-button">First Visible Button</button>
+
+      <button class="opacityZero">Transparent Button</button>
+      <div class="opacityZero">
+        <div>
+          <span><button>Nested Transparent Button</button></span>
+        </div>
+      </div>
+
+      <button class="displayNone">Hidden Button</button>
+      <div class="displayNone">
+        <div>
+          <span><button>Nested Hidden Button</button></span>
+        </div>
+      </div>
+
+      <!-- Not yet supported by WebKit (16) on macos-latest GitHub runner as of November 2025
+      <span class="contentVisibilityHidden"><button>Non-Rendered Button</button></span>
+      -->
+
+      <button class="visibilityHidden">Hidden Button</button>
+      <div class="visibilityHidden">
+        <div>
+          <span><button>Nested Hidden Button</button></span>
+        </div>
+      </div>
+
+      <button class="visibilityCollapse">Nested Collapsed Button</button>
+      <div class="visibilityCollapse">
+        <div>
+          <span><button>Nested Collapsed Button</button></span>
+        </div>
+      </div>
+
+      <span tabindex="1" class="zeroWidth">Hidden Element</span>
+      <span tabindex="1" class="zeroHeight">Hidden Element</span>
+
+      <button id="last-button">Second Visible Button</button>
+    </div>
+
     <script src="../../index.js"></script>
   </body>
 </html>

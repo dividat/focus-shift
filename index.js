@@ -99,7 +99,7 @@ function focusInitial(direction, container) {
     .filter(hasTabIndex)
     .filter((elem) => elem.tabIndex > 0)
   const markedElement = getMinimumBy(tabindexed, (elem) => elem.tabIndex)
-  if (markedElement != null && isBeingRendered(markedElement)) {
+  if (markedElement != null && isVisible(markedElement)) {
     return applyFocus(direction, makeVirtualOrigin(direction), markedElement)
   }
 
@@ -171,51 +171,76 @@ function isFocusable(element) {
   // Descends from closed details element
   if (hasClosedDetailsAncestor(element)) return false
 
-  return isBeingRendered(element)
+  return isVisible(element)
 }
 
 /**
- * Decide whether an element is being rendered or not.
+ * Decide whether an element should count as visible.
  *
- * An element is not being rendered if:
- * 1. An element has the style "visibility: hidden | collapse" or "display: none". (Note: these are inherited.)
- * 2. An element has the style "opacity: 0". (Somewhat of a white lie, as it will still affect layout.)
- * 3. The width or height of an element is explicitly set to 0.
- * 4. An element's parent is hidden.
+ * Our definition of visible is essentially that of the `checkVisibility` web API, but in addition
+ * we count elements with a zero-size dimension as invisible.
  *
- * @see {@link https://html.spec.whatwg.org/multipage/rendering.html#being-rendered}
- * @function isBeingRendered
  * @param element {Element}
  * @returns {boolean}
  */
-
-function isBeingRendered(element) {
-  if (element.parentElement) {
-    const parentStyle = window.getComputedStyle(element.parentElement, null)
-    if (hasHidingStyleProperty(parentStyle)) return false
-  }
-  const elementStyle = window.getComputedStyle(element, null)
-  if (
-    hasHidingStyleProperty(elementStyle) ||
-    elementStyle.getPropertyValue("width") === "0px" ||
-    elementStyle.getPropertyValue("height") === "0px"
-  )
+function isVisible(element) {
+  if (!checkVisibility(element)) {
     return false
+  }
+
+  if (element instanceof HTMLElement) {
+    if (element.offsetWidth === 0 || element.offsetHeight === 0) return false
+  }
+
   return true
 }
 
 /**
- * Determine if a style declaration has any properties that make an element hidden.
- * @function hasHidingStyleProperty
- * @param style {CSSStyleDeclaration}
+ * Determines whether an element is visible.
+ *
+ * This either defers to `Element.checkVisibility()` if available, or does a simple approximation
+ * of its spec. Returns `true` if the element has a box and is not hidden, fully transparent, or
+ * skipped due to content-visibility.
+ *
+ * @see {@link https://drafts.csswg.org/cssom-view-1/#dom-element-checkvisibility}
+ * @param element {Element}
  * @returns {boolean}
  */
-function hasHidingStyleProperty(style) {
-  return (
-    style.getPropertyValue("display") === "none" ||
-    ["hidden", "collapse"].includes(style.getPropertyValue("visibility")) ||
-    style.getPropertyValue("opacity") === "0"
-  )
+function checkVisibility(element) {
+  if (typeof element.checkVisibility === "function") {
+    const checkAll = {
+      checkOpacity: true,
+      checkVisibilityCSS: true,
+      // With content-visibility auto, though hidden, "the skipped contents must still be available
+      // as normal to user-agent features such as find-in-page, tab order navigation, etc., and must
+      // be focusable and selectable as normal."
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/content-visibility#auto
+      contentVisibilityAuto: false,
+      opacityProperty: true,
+      visibilityProperty: true
+    }
+    return element.checkVisibility(checkAll)
+  }
+
+  // Approximate checkVisibility
+  if (!element.isConnected) return false
+
+  /** @type {Element | null} */
+  let iter = element
+  while (iter != null && iter.nodeType === 1) {
+    const style = getComputedStyle(iter)
+
+    if (style.display === "none") return false
+    if ("contentVisibility" in style && style.contentVisibility === "hidden")
+      return false
+    if (style.opacity === "0") return false
+    if (style.visibility === "hidden" || style.visibility === "collapse")
+      return false
+
+    iter = iter.parentElement
+  }
+
+  return true
 }
 
 /**

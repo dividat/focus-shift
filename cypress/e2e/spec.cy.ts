@@ -440,9 +440,9 @@ describe("focus-shift spec", () => {
 
   it(
     "ignores non-rendered elements",
-    testFor("./cypress/fixtures/non-rendered-elements.html", { className: "columns" }, [
-      { eventType: "keydown", selector: "#first-button", options: keyevent({ key: "ArrowRight" }) },
-      { eventType: "keydown", selector: "#last-button", options: keyevent({ key: "ArrowRight" }) }
+    testFor("./cypress/fixtures/non-rendered-elements.html", { className: "rows" }, [
+      { eventType: "keydown", selector: "#first-button", options: keyevent({ key: "ArrowDown" }) },
+      { eventType: "keydown", selector: "#last-button", options: keyevent({ key: "ArrowDown" }) }
     ])
   )
 })
