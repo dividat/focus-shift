@@ -8,6 +8,10 @@ on:
   # Allows to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  # Unify cypress cache folder to avoid missing binaries on macOS/Windows
+  CYPRESS_CACHE_FOLDER: ~/.cypress-cache
+
 jobs:
   formatting:
     runs-on: ubuntu-latest
@@ -19,11 +23,11 @@ jobs:
 
       - uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2
         with:
-          node-version: "20"
+          node-version: "24"
+      - run: corepack enable
+      - run: pnpm install
 
-      - run: npm install
-
-      - run: npx prettier --check .
+      - run: pnpm exec prettier --check .
 
   typechecks:
     runs-on: ubuntu-latest
@@ -35,11 +39,11 @@ jobs:
 
       - uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2
         with:
-          node-version: "20"
+          node-version: "24"
+      - run: corepack enable
+      - run: pnpm install
 
-      - run: npm install
-
-      - run: npx tsc
+      - run: pnpm exec tsc
 
   e2e-chrome:
     runs-on: ubuntu-latest
@@ -48,6 +52,11 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
+
+      - uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2
+        with:
+          node-version: "24"
+      - run: corepack enable
 
       - uses: cypress-io/github-action@f790eee7a50d9505912f50c2095510be7de06aa7 # v6
         with:
@@ -61,6 +70,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2
+        with:
+          node-version: "24"
+      - run: corepack enable
+
       - uses: cypress-io/github-action@f790eee7a50d9505912f50c2095510be7de06aa7 # v6
         with:
           browser: firefox
@@ -73,6 +87,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2
+        with:
+          node-version: "24"
+      - run: corepack enable
+
       - uses: cypress-io/github-action@f790eee7a50d9505912f50c2095510be7de06aa7 # v6
         with:
           browser: edge
@@ -84,6 +103,11 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
+
+      - uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2
+        with:
+          node-version: "24"
+      - run: corepack enable
 
       - uses: cypress-io/github-action@f790eee7a50d9505912f50c2095510be7de06aa7 # v6
         with:

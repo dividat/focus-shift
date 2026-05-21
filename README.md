@@ -130,11 +130,11 @@ The library is implemented in [withered](https://en.wikipedia.org/wiki/Gunpei_Yo
 
 There is ample JSDoc documentation so that the TypeScript compiler may be used for typechecking in strict mode:
 
-    npm test
+    pnpm test
 
 The code is formatted with slightly non-standard prettier:
 
-    npm run format
+    pnpm run format
 
 End-to-end tests are done using Cypress.
 
