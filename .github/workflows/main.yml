@@ -14,6 +14,8 @@ jobs:
     name: Formatting
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v2
         with:
@@ -28,6 +30,8 @@ jobs:
     name: Typechecks
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v2
         with:
@@ -42,6 +46,8 @@ jobs:
     name: E2E on Chrome
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: cypress-io/github-action@v6
         with:
@@ -52,6 +58,8 @@ jobs:
     name: E2E on Firefox
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: cypress-io/github-action@v6
         with:
@@ -62,6 +70,8 @@ jobs:
     name: E2E on Edge
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: cypress-io/github-action@v6
         with:
@@ -72,6 +82,8 @@ jobs:
     name: E2E on WebKit
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: cypress-io/github-action@v6
         with:
